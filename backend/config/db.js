@@ -1,7 +1,20 @@
-const mysql = require('mysql2/promise');
-require('dotenv').config();
+import mysql from 'mysql2/promise';
+import dotenv from 'dotenv';
+dotenv.config();
+import { PrismaClient } from '@prisma/client';
 
-const pool = mysql.createPool({
+export const prisma = new PrismaClient();
+
+process.on('SIGINT', async () => {
+  await prisma.$disconnect();
+  process.exit(0);
+});
+process.on('SIGTERM', async () => {
+  await prisma.$disconnect();
+  process.exit(0);
+});
+
+export const pool = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
@@ -11,4 +24,6 @@ const pool = mysql.createPool({
   queueLimit: 0
 });
 
-module.exports = pool;
+export async function getConnection() {
+  return pool.getConnection();
+}

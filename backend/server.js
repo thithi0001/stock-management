@@ -1,22 +1,27 @@
-const express = require('express');
-const cors = require('cors');
-require('dotenv').config();
-const pool = require('./config/db');
+import express, { json } from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+dotenv.config();
+import { getConnection } from './config/db.js';
+import authRoutes from './routes/authRoutes.js';
 
 const app = express();
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+app.use(json());
 
 // Routes (sẽ thêm sau)
 app.get('/api/test', (req, res) => {
   res.json({ message: 'Backend hoạt động!' });
 });
 
+// Auth routes
+app.use('/api/auth', authRoutes)
+
 app.get('/api/database', async (req, res) => {
   try {
-    const connection = await pool.getConnection();
+    const connection = await getConnection();
     const [rows] = await connection.query('SELECT * FROM roles');
     connection.release();
     res.json({ message: 'Database hoạt động!', data: rows });

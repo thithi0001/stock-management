@@ -1,0 +1,293 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model approval_exports {
+  approval_id       Int                         @id @default(autoincrement())
+  export_receipt_id Int
+  approved_at       DateTime                    @default(now()) @db.DateTime(0)
+  approved_by       Int
+  new_status        approval_exports_new_status
+  reason            String                      @db.VarChar(500)
+  export_receipts   export_receipts             @relation(fields: [export_receipt_id], references: [receipt_id], onDelete: NoAction, onUpdate: NoAction, map: "approval_exports_ibfk_1")
+  user_accounts     user_accounts               @relation(fields: [approved_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "approval_exports_ibfk_2")
+
+  @@index([approved_by], map: "approved_by")
+  @@index([export_receipt_id], map: "export_receipt_id")
+}
+
+model approval_imports {
+  approval_id       Int                         @id @default(autoincrement())
+  import_receipt_id Int
+  approved_at       DateTime                    @default(now()) @db.DateTime(0)
+  approved_by       Int
+  new_status        approval_imports_new_status
+  reason            String                      @db.VarChar(500)
+  import_receipts   import_receipts             @relation(fields: [import_receipt_id], references: [receipt_id], onDelete: NoAction, onUpdate: NoAction, map: "approval_imports_ibfk_1")
+  user_accounts     user_accounts               @relation(fields: [approved_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "approval_imports_ibfk_2")
+
+  @@index([approved_by], map: "approved_by")
+  @@index([import_receipt_id], map: "import_receipt_id")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model customers {
+  customer_id     Int               @id @default(autoincrement())
+  customer_name   String            @unique(map: "customer_name") @db.VarChar(100)
+  address         String            @db.VarChar(200)
+  phone           String            @db.VarChar(15)
+  email           String            @db.VarChar(100)
+  export_receipts export_receipts[]
+}
+
+model error_reports {
+  error_id      Int                       @id @default(autoincrement())
+  error_type    error_reports_error_type? @default(system)
+  message       String                    @db.VarChar(500)
+  created_by    Int
+  created_at    DateTime                  @default(now()) @db.DateTime(0)
+  is_solved     Boolean?                  @default(dbgenerated("b'0'")) @db.Bit(1)
+  user_accounts user_accounts             @relation(fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "error_reports_ibfk_1")
+
+  @@index([created_by], map: "created_by")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model export_details {
+  receipt_id      Int
+  product_id      Int
+  quantity        Int
+  unit_price      Decimal         @db.Decimal(12, 2)
+  total_amount    Decimal         @db.Decimal(20, 2)
+  export_receipts export_receipts @relation(fields: [receipt_id], references: [receipt_id], onDelete: NoAction, onUpdate: NoAction, map: "export_details_ibfk_1")
+  products        products        @relation(fields: [product_id], references: [product_id], onDelete: NoAction, onUpdate: NoAction, map: "export_details_ibfk_2")
+
+  @@id([receipt_id, product_id])
+  @@index([product_id], map: "product_id")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model export_receipts {
+  receipt_id       Int                            @id @default(autoincrement())
+  created_at       DateTime                       @default(now()) @db.DateTime(0)
+  customer_id      Int
+  created_by       Int
+  receipt_status   export_receipts_receipt_status @default(pending)
+  total_amount     Decimal                        @db.Decimal(20, 2)
+  approval_exports approval_exports[]
+  export_details   export_details[]
+  customers        customers                      @relation(fields: [customer_id], references: [customer_id], onDelete: NoAction, onUpdate: NoAction, map: "export_receipts_ibfk_1")
+  user_accounts    user_accounts                  @relation(fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "export_receipts_ibfk_2")
+
+  @@index([created_by], map: "created_by")
+  @@index([customer_id], map: "customer_id")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model import_details {
+  receipt_id      Int
+  product_id      Int
+  quantity        Int
+  unit_price      Decimal         @db.Decimal(12, 2)
+  total_amount    Decimal         @db.Decimal(20, 2)
+  import_receipts import_receipts @relation(fields: [receipt_id], references: [receipt_id], onDelete: NoAction, onUpdate: NoAction, map: "import_details_ibfk_1")
+  products        products        @relation(fields: [product_id], references: [product_id], onDelete: NoAction, onUpdate: NoAction, map: "import_details_ibfk_2")
+
+  @@id([receipt_id, product_id])
+  @@index([product_id], map: "product_id")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model import_receipts {
+  receipt_id           Int                            @id @default(autoincrement())
+  created_at           DateTime                       @default(now()) @db.DateTime(0)
+  supplier_id          Int
+  created_by           Int
+  receipt_status       import_receipts_receipt_status @default(pending)
+  total_amount         Decimal                        @db.Decimal(20, 2)
+  approval_imports     approval_imports[]
+  import_details       import_details[]
+  suppliers            suppliers                      @relation(fields: [supplier_id], references: [supplier_id], onDelete: NoAction, onUpdate: NoAction, map: "import_receipts_ibfk_1")
+  user_accounts        user_accounts                  @relation(fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "import_receipts_ibfk_2")
+  restock_import_links restock_import_links[]
+
+  @@index([created_by], map: "created_by")
+  @@index([supplier_id], map: "supplier_id")
+}
+
+model monthly_reports {
+  report_id   Int                         @id @default(autoincrement())
+  report_type monthly_reports_report_type
+  from_date   DateTime                    @db.DateTime(0)
+  to_date     DateTime                    @db.DateTime(0)
+  file_url    String                      @db.VarChar(255)
+  created_at  DateTime?                   @default(now()) @db.DateTime(0)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model products {
+  product_id       Int                     @id @default(autoincrement())
+  product_name     String                  @db.VarChar(100)
+  unit             String                  @db.VarChar(50)
+  import_price     Decimal                 @db.Decimal(12, 2)
+  export_price     Decimal                 @db.Decimal(12, 2)
+  minimum          Int                     @default(0)
+  product_status   products_product_status @default(available)
+  export_details   export_details[]
+  import_details   import_details[]
+  restock_requests restock_requests[]
+  stocks           stocks[]
+}
+
+model restock_import_links {
+  link_id            Int                               @id @default(autoincrement())
+  restock_request_id Int
+  import_receipt_id  Int
+  created_at         DateTime?                         @default(now()) @db.DateTime(0)
+  link_status        restock_import_links_link_status? @default(active)
+  note               String?                           @db.VarChar(255)
+  restock_requests   restock_requests                  @relation(fields: [restock_request_id], references: [request_id], onDelete: NoAction, onUpdate: NoAction, map: "restock_import_links_ibfk_1")
+  import_receipts    import_receipts                   @relation(fields: [import_receipt_id], references: [receipt_id], onDelete: NoAction, onUpdate: NoAction, map: "restock_import_links_ibfk_2")
+
+  @@unique([restock_request_id, import_receipt_id], map: "restock_request_id")
+  @@index([import_receipt_id], map: "import_receipt_id")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model restock_requests {
+  request_id                                                 Int                              @id @default(autoincrement())
+  product_id                                                 Int
+  requested_by                                               Int
+  notified_to                                                Int
+  requested_at                                               DateTime?                        @default(now()) @db.DateTime(0)
+  requested_quantity                                         Int
+  request_status                                             restock_requests_request_status? @default(pending)
+  note                                                       String?                          @db.VarChar(255)
+  restock_import_links                                       restock_import_links[]
+  products                                                   products                         @relation(fields: [product_id], references: [product_id], onDelete: NoAction, onUpdate: NoAction, map: "restock_requests_ibfk_1")
+  user_accounts_restock_requests_requested_byTouser_accounts user_accounts                    @relation("restock_requests_requested_byTouser_accounts", fields: [requested_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "restock_requests_ibfk_2")
+  user_accounts_restock_requests_notified_toTouser_accounts  user_accounts                    @relation("restock_requests_notified_toTouser_accounts", fields: [notified_to], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "restock_requests_ibfk_3")
+
+  @@index([notified_to], map: "notified_to")
+  @@index([product_id], map: "product_id")
+  @@index([requested_by], map: "requested_by")
+}
+
+model roles {
+  role_id       Int             @id @default(autoincrement())
+  role_name     String          @unique(map: "role_name") @db.VarChar(50)
+  user_accounts user_accounts[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model stocks {
+  stock_id        Int                 @id @default(autoincrement())
+  product_id      Int
+  quantity        Int
+  last_updated_at DateTime?           @default(now()) @db.DateTime(0)
+  warning         Boolean?            @default(dbgenerated("b'0'")) @db.Bit(1)
+  stock_status    stocks_stock_status @default(normal)
+  products        products            @relation(fields: [product_id], references: [product_id], onDelete: NoAction, onUpdate: NoAction, map: "stocks_ibfk_1")
+
+  @@index([product_id], map: "product_id")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model suppliers {
+  supplier_id     Int               @id @default(autoincrement())
+  supplier_name   String            @unique(map: "supplier_name") @db.VarChar(100)
+  address         String            @db.VarChar(200)
+  phone           String            @db.VarChar(15)
+  email           String            @db.VarChar(100)
+  import_receipts import_receipts[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model user_accounts {
+  user_id                                                       Int                           @id @default(autoincrement())
+  username                                                      String                        @unique(map: "username") @db.VarChar(50)
+  user_password                                                 String                        @db.VarChar(255)
+  full_name                                                     String                        @db.VarChar(100)
+  phone                                                         String                        @db.VarChar(15)
+  email                                                         String                        @db.VarChar(100)
+  role_id                                                       Int
+  account_status                                                user_accounts_account_status? @default(active)
+  approval_exports                                              approval_exports[]
+  approval_imports                                              approval_imports[]
+  error_reports                                                 error_reports[]
+  export_receipts                                               export_receipts[]
+  import_receipts                                               import_receipts[]
+  restock_requests_restock_requests_requested_byTouser_accounts restock_requests[]            @relation("restock_requests_requested_byTouser_accounts")
+  restock_requests_restock_requests_notified_toTouser_accounts  restock_requests[]            @relation("restock_requests_notified_toTouser_accounts")
+  roles                                                         roles                         @relation(fields: [role_id], references: [role_id], onDelete: NoAction, onUpdate: NoAction, map: "user_accounts_ibfk_1")
+
+  @@index([role_id], map: "role_id")
+}
+
+enum error_reports_error_type {
+  system
+  inventory
+  import
+  export
+  user
+}
+
+enum monthly_reports_report_type {
+  import
+  export
+  inventory
+}
+
+enum import_receipts_receipt_status {
+  pending
+  approved
+  rejected
+}
+
+enum restock_import_links_link_status {
+  active
+  replaced
+  rejected
+  fulfilled
+}
+
+enum export_receipts_receipt_status {
+  pending
+  approved
+  rejected
+}
+
+enum approval_imports_new_status {
+  approved
+  rejected
+}
+
+enum approval_exports_new_status {
+  approved
+  rejected
+}
+
+enum stocks_stock_status {
+  normal
+  damaged
+}
+
+enum products_product_status {
+  available
+  unavailable
+}
+
+enum restock_requests_request_status {
+  pending
+  fulfilled
+}
+
+enum user_accounts_account_status {
+  active
+  inactive
+}

@@ -1,0 +1,34 @@
+[
+    {
+        "username": "thukho",
+        "password": "thukho01",
+        "full_name": "Lê Văn A",
+        "phone": "0123456789",
+        "email": "thukho01@gmail.com",
+        "role_name": "storekeeper"
+    },
+    {
+        "username": "quanlykho",
+        "password": "quanlykho01",
+        "full_name": "Nguyễn Thị H",
+        "phone": "0911111111",
+        "email": "quanlykho01@gmail.com",
+        "role_name": "manager"
+    },
+    {
+        "username": "nvmh",
+        "password": "nhanvien01",
+        "full_name": "Trần Văn B",
+        "phone": "0836668386",
+        "email": "nvmh01@gmail.com",
+        "role_name": "import staff"
+    },
+    {
+        "username": "nvbh",
+        "password": "nhanvien02",
+        "full_name": "Hoàng Văn C",
+        "phone": "0919555999",
+        "email": "nvbh01@gmail.com",
+        "role_name": "export staff"
+    }
+]
