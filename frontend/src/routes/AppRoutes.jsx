@@ -7,6 +7,9 @@ import MainLayout from "../components/layout/MainLayout";
 import ProductPage from "../pages/ProductPage";
 import NotFoundPage from "../pages/NotFoundPage";
 import StockPage from "../pages/StockPage";
+import CreatePOPage from "../pages/CreatePOPage";
+import ApprovePOPage from "../pages/ApprovePage";
+import GoodsReceiptPage from "../pages/GoodsReceiptPage";
 
 function AppRoutes() {
   return (
@@ -53,7 +56,18 @@ function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={[ROLES.IMPORTSTAFF, ROLES.STOREKEEPER]}>
             <MainLayout>
-              <Home />
+              <CreatePOPage />
+            </MainLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/import-order"
+        element={
+          <ProtectedRoute allowedRoles={[ROLES.IMPORTSTAFF, ROLES.STOREKEEPER]}>
+            <MainLayout>
+              <GoodsReceiptPage />
             </MainLayout>
           </ProtectedRoute>
         }
@@ -75,7 +89,7 @@ function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={[ROLES.STOREKEEPER]}>
             <MainLayout>
-              <Home />
+              <ApprovePOPage />
             </MainLayout>
           </ProtectedRoute>
         }
