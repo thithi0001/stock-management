@@ -4,6 +4,8 @@ import dotenv from 'dotenv';
 dotenv.config();
 import { getConnection } from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
+import productRoutes from './routes/productRoutes.js';
+import stockRoutes from './routes/stockRoutes.js';
 
 const app = express();
 
@@ -17,7 +19,9 @@ app.get('/api/test', (req, res) => {
 });
 
 // Auth routes
-app.use('/api/auth', authRoutes)
+app.use('/api/auth', authRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/stocks', stockRoutes);
 
 app.get('/api/database', async (req, res) => {
   try {

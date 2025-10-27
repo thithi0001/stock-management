@@ -13,21 +13,21 @@ export function authenticateToken(req, res, next) {
   }
 }
 
-// export function authorizeRoles(...allowedRoles) {
-//   return (req, res, next) => {
-//     if (!req.user) return res.status(401).json({ message: 'not authenticated' });
-//     if (!allowedRoles.includes(req.user.role_name))
-//         return res.status(403).json({ message: 'forbidden' });
-//     next();
-//   };
-// }
-
 export function authorizeRoleIds(...allowedRoleIds) {
   return (req, res, next) => {
-    if (!req.user) return res.status(401).json({ message: 'not authenticated' });
+    if (!req.user) return res.status(401).json({ message: 'Not authenticated' });
     if (!allowedRoleIds.includes(req.user.role_Id))
-        return res.status(403).json({ message: 'forbidden' });
+        return res.status(403).json({ message: 'Forbidden' });
     next();
   };
 }
 
+export function authorizeRoles(...allowedRoles) {
+  return (req, res, next) => {
+    if (!req.user) return res.status(401).json({ message: 'Not authenticated' });
+    if (!allowedRoles.includes(req.user.role)) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+    next();
+  };
+}
