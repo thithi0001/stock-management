@@ -7,6 +7,8 @@ import MainLayout from "../components/layout/MainLayout";
 import ProductPage from "../pages/ProductPage";
 import NotFoundPage from "../pages/NotFoundPage";
 import StockPage from "../pages/StockPage";
+import ExportPage from "../pages/ExportPage";
+import ApprovalPage from "../pages/ApprovalPage";
 
 function AppRoutes() {
   return (
@@ -62,9 +64,9 @@ function AppRoutes() {
       <Route
         path="/export"
         element={
-          <ProtectedRoute allowedRoles={[ROLES.IMPORTSTAFF, ROLES.STOREKEEPER]}>
+          <ProtectedRoute allowedRoles={[ROLES.EXPORTSTAFF, ROLES.STOREKEEPER]}>
             <MainLayout>
-              <Home />
+              <ExportPage />
             </MainLayout>
           </ProtectedRoute>
         }
@@ -75,7 +77,7 @@ function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={[ROLES.STOREKEEPER]}>
             <MainLayout>
-              <Home />
+              <ApprovalPage />
             </MainLayout>
           </ProtectedRoute>
         }

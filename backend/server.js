@@ -6,6 +6,9 @@ import { getConnection } from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 import stockRoutes from './routes/stockRoutes.js';
+import exportRoutes from './routes/exportRoutes.js';
+import approvalExportRoutes from './routes/approvalExportRoutes.js';
+import customerRoutes from './routes/customerRoutes.js';
 
 const app = express();
 
@@ -22,6 +25,15 @@ app.get('/api/test', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/stocks', stockRoutes);
+
+app.use('/api/customers', customerRoutes);
+
+
+// Xuat hang
+app.use('/api/export', exportRoutes);
+// Duyet xuat hang
+app.use('/api/approval-export', approvalExportRoutes);
+
 
 app.get('/api/database', async (req, res) => {
   try {
