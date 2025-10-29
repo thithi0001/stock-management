@@ -6,6 +6,7 @@ import { getConnection } from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 import stockRoutes from './routes/stockRoutes.js';
+import importRoutes from './routes/importRoutes.js';
 import exportRoutes from './routes/exportRoutes.js';
 import approvalExportRoutes from './routes/approvalExportRoutes.js';
 import customerRoutes from './routes/customerRoutes.js';
@@ -26,6 +27,9 @@ app.get('/api/test', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/stocks', stockRoutes);
+
+//Nhap hang
+app.use('/api/import', importRoutes);
 
 // Khach hang
 app.use('/api/customers', customerRoutes);

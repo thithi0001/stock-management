@@ -7,12 +7,12 @@ import MainLayout from "../components/layout/MainLayout";
 import ProductPage from "../pages/ProductPage";
 import NotFoundPage from "../pages/NotFoundPage";
 import StockPage from "../pages/StockPage";
-import CreatePOPage from "../pages/CreatePOPage";
 import GoodsReceiptPage from "../pages/GoodsReceiptPage";
 import ExportPage from "../pages/ExportPage";
 import ApprovalPage from "../pages/ApprovalPage";
 import CustomerPage from "../pages/CustomerPage";
 import SupplierPage from "../pages/SupplierPage";
+import ImportPage from "../pages/ImportPage";
 
 function AppRoutes() {
   return (
@@ -59,14 +59,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={[ROLES.IMPORTSTAFF, ROLES.STOREKEEPER]}>
             <MainLayout>
-              <CreatePOPage />
+              <ImportPage />
             </MainLayout>
           </ProtectedRoute>
         }
       />
 
       <Route
-        path="/import-order"
+        path="/approval-import"
         element={
           <ProtectedRoute allowedRoles={[ROLES.IMPORTSTAFF, ROLES.STOREKEEPER]}>
             <MainLayout>
@@ -88,7 +88,7 @@ function AppRoutes() {
       />
 
       <Route
-        path="/approval"
+        path="/approval-export"
         element={
           <ProtectedRoute allowedRoles={[ROLES.STOREKEEPER]}>
             <MainLayout>
