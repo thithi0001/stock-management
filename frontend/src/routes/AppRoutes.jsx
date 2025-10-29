@@ -8,6 +8,12 @@ import ProductPage from "../pages/ProductPage";
 import NotFoundPage from "../pages/NotFoundPage";
 import StockPage from "../pages/StockPage";
 import RestockPage from "../pages/RestockPage";
+import GoodsReceiptPage from "../pages/GoodsReceiptPage";
+import ExportPage from "../pages/ExportPage";
+import ApprovalPage from "../pages/ApprovalPage";
+import CustomerPage from "../pages/CustomerPage";
+import SupplierPage from "../pages/SupplierPage";
+import ImportPage from "../pages/ImportPage";
 
 function AppRoutes() {
   return (
@@ -54,7 +60,18 @@ function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={[ROLES.IMPORTSTAFF, ROLES.STOREKEEPER]}>
             <MainLayout>
-              <Home />
+              <ImportPage />
+            </MainLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/approval-import"
+        element={
+          <ProtectedRoute allowedRoles={[ROLES.IMPORTSTAFF, ROLES.STOREKEEPER]}>
+            <MainLayout>
+              <GoodsReceiptPage />
             </MainLayout>
           </ProtectedRoute>
         }
@@ -63,20 +80,20 @@ function AppRoutes() {
       <Route
         path="/export"
         element={
-          <ProtectedRoute allowedRoles={[ROLES.IMPORTSTAFF, ROLES.STOREKEEPER]}>
+          <ProtectedRoute allowedRoles={[ROLES.EXPORTSTAFF, ROLES.STOREKEEPER]}>
             <MainLayout>
-              <Home />
+              <ExportPage />
             </MainLayout>
           </ProtectedRoute>
         }
       />
 
       <Route
-        path="/approval"
+        path="/approval-export"
         element={
           <ProtectedRoute allowedRoles={[ROLES.STOREKEEPER]}>
             <MainLayout>
-              <Home />
+              <ApprovalPage />
             </MainLayout>
           </ProtectedRoute>
         }
@@ -109,7 +126,7 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <MainLayout>
-              <Home />
+              <SupplierPage />
             </MainLayout>
           </ProtectedRoute>
         }
@@ -120,7 +137,7 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <MainLayout>
-              <Home />
+              <CustomerPage />
             </MainLayout>
           </ProtectedRoute>
         }

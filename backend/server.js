@@ -8,6 +8,11 @@ import profileRoutes from './routes/profileRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 import stockRoutes from './routes/stockRoutes.js';
 import restockRoutes from './routes/restockRoutes.js';
+import importRoutes from './routes/importRoutes.js';
+import exportRoutes from './routes/exportRoutes.js';
+import approvalExportRoutes from './routes/approvalExportRoutes.js';
+import customerRoutes from './routes/customerRoutes.js';
+import supplierRoutes from './routes/supplierRoutes.js';
 
 const app = express();
 
@@ -26,6 +31,21 @@ app.use('/api/profile', profileRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/stocks', stockRoutes);
 app.use('/api/restocks', restockRoutes);
+
+//Nhap hang
+app.use('/api/import', importRoutes);
+
+// Khach hang
+app.use('/api/customers', customerRoutes);
+
+// Nha cung cap
+app.use('/api/suppliers', supplierRoutes);
+
+// Xuat hang
+app.use('/api/export', exportRoutes);
+// Duyet xuat hang
+app.use('/api/approval-export', approvalExportRoutes);
+
 
 app.get('/api/database', async (req, res) => {
   try {

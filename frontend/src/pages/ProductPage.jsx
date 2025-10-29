@@ -1,12 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import useApi from "../services/api";
 import ProductModal from "../components/modals/ProductModal";
 import {
   createProduct,
   getProducts,
   updateProduct,
 } from "../services/productServices";
+import { useApi } from "../services/api";
 
 const ProductPage = () => {
   const { token } = useAuth(); // not used directly, ensures context present
