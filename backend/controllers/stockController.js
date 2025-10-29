@@ -19,7 +19,8 @@ export const getAllStocks = async (req, res) => {
 
 export const getStockById = async (req, res) => {
     try {
-        const stock = await findStockById(req.params.stock_id);
+        const stock_id = Number(req.params.stock_id);
+        const stock = await findStockById(stock_id);
         return res.json(stock);
     } catch (error) {
         console.error(error);
@@ -29,7 +30,8 @@ export const getStockById = async (req, res) => {
 
 export const getStockByProductId = async (req, res) => {
     try {
-        const stock = await findStockByProductId(req.params.product_id);
+        const product_id = Number(req.params.product_id);
+        const stock = await findStockByProductId(product_id);
         return res.json(stock);
     } catch (error) {
         console.error(error);
@@ -58,7 +60,7 @@ export const addStock = async (req, res) => {
 
 export const editStock = async (req, res) => {
     try {
-        const id = req.params.stock_id;
+        const id = Number(req.params.stock_id);
         const data = req.body;
 
         if (!data || Object.keys(data).length === 0) {
