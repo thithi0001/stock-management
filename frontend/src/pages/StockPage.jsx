@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import useApi from "../services/api";
 import StockModal from "../components/modals/StockModal";
 import { getStocks, updateStock } from "../services/stockServices";
+import { useApi } from "../services/api";
 
 const StockPage = () => {
   const { token } = useAuth();

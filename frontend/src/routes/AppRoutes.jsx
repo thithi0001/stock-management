@@ -10,6 +10,9 @@ import StockPage from "../pages/StockPage";
 import CreatePOPage from "../pages/CreatePOPage";
 import ApprovePOPage from "../pages/ApprovePage";
 import GoodsReceiptPage from "../pages/GoodsReceiptPage";
+import ExportPage from "../pages/ExportPage";
+import ApprovalPage from "../pages/ApprovalPage";
+import CustomerPage from "../pages/CustomerPage";
 
 function AppRoutes() {
   return (
@@ -76,9 +79,9 @@ function AppRoutes() {
       <Route
         path="/export"
         element={
-          <ProtectedRoute allowedRoles={[ROLES.IMPORTSTAFF, ROLES.STOREKEEPER]}>
+          <ProtectedRoute allowedRoles={[ROLES.EXPORTSTAFF, ROLES.STOREKEEPER]}>
             <MainLayout>
-              <Home />
+              <ExportPage />
             </MainLayout>
           </ProtectedRoute>
         }
@@ -89,7 +92,7 @@ function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={[ROLES.STOREKEEPER]}>
             <MainLayout>
-              <ApprovePOPage />
+              <ApprovalPage />
             </MainLayout>
           </ProtectedRoute>
         }
@@ -122,7 +125,7 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <MainLayout>
-              <Home />
+              <CustomerPage />
             </MainLayout>
           </ProtectedRoute>
         }
