@@ -8,7 +8,6 @@ import ProductPage from "../pages/ProductPage";
 import NotFoundPage from "../pages/NotFoundPage";
 import StockPage from "../pages/StockPage";
 import CreatePOPage from "../pages/CreatePOPage";
-import ApprovePOPage from "../pages/ApprovePage";
 import GoodsReceiptPage from "../pages/GoodsReceiptPage";
 import ExportPage from "../pages/ExportPage";
 import ApprovalPage from "../pages/ApprovalPage";
