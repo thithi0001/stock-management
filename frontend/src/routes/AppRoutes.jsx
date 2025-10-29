@@ -12,6 +12,7 @@ import GoodsReceiptPage from "../pages/GoodsReceiptPage";
 import ExportPage from "../pages/ExportPage";
 import ApprovalPage from "../pages/ApprovalPage";
 import CustomerPage from "../pages/CustomerPage";
+import SupplierPage from "../pages/SupplierPage";
 
 function AppRoutes() {
   return (
@@ -113,7 +114,7 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <MainLayout>
-              <Home />
+              <SupplierPage />
             </MainLayout>
           </ProtectedRoute>
         }

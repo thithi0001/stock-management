@@ -9,6 +9,7 @@ import stockRoutes from './routes/stockRoutes.js';
 import exportRoutes from './routes/exportRoutes.js';
 import approvalExportRoutes from './routes/approvalExportRoutes.js';
 import customerRoutes from './routes/customerRoutes.js';
+import supplierRoutes from './routes/supplierRoutes.js';
 
 const app = express();
 
@@ -26,8 +27,11 @@ app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/stocks', stockRoutes);
 
+// Khach hang
 app.use('/api/customers', customerRoutes);
 
+// Nha cung cap
+app.use('/api/suppliers', supplierRoutes);
 
 // Xuat hang
 app.use('/api/export', exportRoutes);
