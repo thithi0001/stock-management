@@ -9,7 +9,7 @@ import {
 
 const router = express.Router();
 
-router.get('/', getAllProducts);
+router.get('/', authenticateToken, getAllProducts);
 router.post('/', authenticateToken, authorizeRoles(ROLES.STOREKEEPER), addProduct);
 router.put('/:product_id', authenticateToken, authorizeRoles(ROLES.STOREKEEPER), editProduct);
 

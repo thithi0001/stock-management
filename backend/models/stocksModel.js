@@ -20,10 +20,10 @@ export async function findAllStocks() {
     });
 }
 
-export async function findStockById(stock_id) {
+export async function findStockById(id) {
     return prisma.stocks.findUnique({
         where: {
-            stock_id
+            stock_id: Number(id)
         },
         include: {
             products: {
@@ -41,7 +41,7 @@ export async function findStockById(stock_id) {
 export async function findStockByProductId(product_id) {
     return prisma.stocks.findUnique({
         where: {
-            product_id
+            product_id: Number(product_id)
         },
         include: {
             products: {
@@ -61,15 +61,16 @@ export async function findStockByProductId(product_id) {
 export async function createStock(product_id) {
     return prisma.stocks.create({
         data: {
-            product_id,
-            quantity: 0
+            product_id: Number(product_id)
         }
     });
 }
 
-export async function updateStock(stock_id, data) {
+export async function updateStock(id, data) {
     return prisma.stocks.update({
-        where: { stock_id },
+        where: {
+            stock_id: Number(id)
+        },
         data: {
             quantity: data.quantity,
             stock_status: data.stock_status

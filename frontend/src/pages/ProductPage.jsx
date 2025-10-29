@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import ProductModal from "../components/modals/ProductModal";
-import { 
+import {
   createProduct,
-  getProducts, 
-  updateProduct 
+  getProducts,
+  updateProduct,
 } from "../services/productServices";
 import { useApi } from "../services/api";
 
@@ -15,6 +15,7 @@ const ProductPage = () => {
   const [search, setSearch] = useState("");
   const [unitFilter, setUnitFilter] = useState("");
   const [minThreshold, setMinThreshold] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -42,11 +43,21 @@ const ProductPage = () => {
     return ["", ...Array.from(s)];
   }, [products]);
 
+  const statuses = useMemo(() => {
+    const s = new Set(products.map((p) => p.product_status).filter(Boolean));
+    return ["", ...Array.from(s)];
+  }, [products]);
+
   const filtered = products.filter((p) => {
-    const nameMatch = p.product_name?.toLowerCase().includes(search.toLowerCase());
+    const nameMatch = p.product_name
+      ?.toLowerCase()
+      .includes(search.toLowerCase());
     const unitMatch = unitFilter ? p.unit === unitFilter : true;
-    const minMatch = minThreshold ? (p.minimum ?? 0) <= Number(minThreshold) : true;
-    return nameMatch && unitMatch && minMatch;
+    const minMatch = minThreshold
+      ? (p.minimum ?? 0) <= Number(minThreshold)
+      : true;
+    const statusMatch = statusFilter ? p.product_status === statusFilter : true;
+    return nameMatch && unitMatch && minMatch && statusMatch;
   });
 
   const openAdd = () => {
@@ -75,7 +86,9 @@ const ProductPage = () => {
       closeModal();
     } catch (err) {
       console.error("Save product error", err);
-      alert(err.response?.data?.message || err.message || "Lỗi khi lưu sản phẩm");
+      alert(
+        err.response?.data?.message || err.message || "Lỗi khi lưu sản phẩm"
+      );
     }
   };
 
@@ -84,20 +97,62 @@ const ProductPage = () => {
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-semibold">Danh sách sản phẩm</h2>
         <div className="flex gap-2">
-          <button onClick={openAdd} className="px-3 py-2 bg-green-600 text-white rounded">Thêm sản phẩm</button>
+          <button
+            onClick={openAdd}
+            className="px-3 py-2 bg-green-600 text-white rounded"
+          >
+            Thêm sản phẩm
+          </button>
         </div>
       </div>
 
       <div className="flex gap-3 mb-4">
-        <input placeholder="Tìm kiếm theo tên..." value={search} onChange={(e) => setSearch(e.target.value)}
-          className="border rounded p-2 w-64" />
-        <select value={unitFilter} onChange={(e) => setUnitFilter(e.target.value)}
-          className="border rounded p-2">
-          {units.map((u, idx) => <option key={idx} value={u}>{u || "Tất cả đơn vị"}</option>)}
+        <input
+          placeholder="Tìm kiếm theo tên..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="border rounded p-2 w-64"
+        />
+        <select
+          value={unitFilter}
+          onChange={(e) => setUnitFilter(e.target.value)}
+          className="border rounded p-2"
+        >
+          {units.map((u, idx) => (
+            <option key={idx} value={u}>
+              {u || "Tất cả đơn vị"}
+            </option>
+          ))}
         </select>
-        <input placeholder="Tối thiểu <= ..." value={minThreshold} onChange={(e) => setMinThreshold(e.target.value)}
-          className="border rounded p-2 w-40" type="number" />
-        <button onClick={() => { setSearch(""); setUnitFilter(""); setMinThreshold(""); }} className="px-3 py-2 border rounded">Reset</button>
+        <input
+          placeholder="Tối thiểu <= ..."
+          value={minThreshold}
+          onChange={(e) => setMinThreshold(e.target.value)}
+          className="border rounded p-2 w-40"
+          type="number"
+        />
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="border rounded p-2"
+        >
+          {statuses.map((u, idx) => (
+            <option key={idx} value={u}>
+              {u || "Tất cả trạng thái"}
+            </option>
+          ))}
+        </select>
+        <button
+          onClick={() => {
+            setSearch("");
+            setUnitFilter("");
+            setMinThreshold("");
+            setStatusFilter("");
+          }}
+          className="px-3 py-2 border rounded"
+        >
+          Reset
+        </button>
       </div>
 
       <div className="overflow-x-auto bg-white rounded shadow">
@@ -110,32 +165,54 @@ const ProductPage = () => {
               <th className="p-2 border">Giá nhập</th>
               <th className="p-2 border">Giá xuất</th>
               <th className="p-2 border">Tối thiểu</th>
+              <th className="p-2 border">Trạng thái</th>
               <th className="p-2 border">Hành động</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={7} className="p-4 text-center">Đang tải...</td></tr>
-            ) : filtered.length === 0 ? (
-              <tr><td colSpan={7} className="p-4 text-center">Không có sản phẩm</td></tr>
-            ) : filtered.map((p) => (
-              <tr key={p.product_id} className="odd:bg-white even:bg-gray-50">
-                <td className="p-2 border">{p.product_id}</td>
-                <td className="p-2 border">{p.product_name}</td>
-                <td className="p-2 border">{p.unit}</td>
-                <td className="p-2 border">{p.import_price ?? "-"}</td>
-                <td className="p-2 border">{p.export_price ?? "-"}</td>
-                <td className="p-2 border">{p.minimum ?? "-"}</td>
-                <td className="p-2 border">
-                  <button onClick={() => openEdit(p)} className="px-2 py-1 mr-2 border rounded">Sửa</button>
+              <tr>
+                <td colSpan={8} className="p-4 text-center">
+                  Đang tải...
                 </td>
               </tr>
-            ))}
+            ) : filtered.length === 0 ? (
+              <tr>
+                <td colSpan={8} className="p-4 text-center">
+                  Không có sản phẩm
+                </td>
+              </tr>
+            ) : (
+              filtered.map((p) => (
+                <tr key={p.product_id} className="odd:bg-white even:bg-gray-50">
+                  <td className="p-2 border">{p.product_id}</td>
+                  <td className="p-2 border">{p.product_name}</td>
+                  <td className="p-2 border">{p.unit}</td>
+                  <td className="p-2 border">{p.import_price ?? "-"}</td>
+                  <td className="p-2 border">{p.export_price ?? "-"}</td>
+                  <td className="p-2 border">{p.minimum ?? "-"}</td>
+                  <td className="p-2 border">{p.product_status}</td>
+                  <td className="p-2 border">
+                    <button
+                      onClick={() => openEdit(p)}
+                      className="px-2 py-1 mr-2 border rounded"
+                    >
+                      Sửa
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
 
-      <ProductModal open={modalOpen} onClose={closeModal} onSave={handleSave} initialData={editing} />
+      <ProductModal
+        open={modalOpen}
+        onClose={closeModal}
+        onSave={handleSave}
+        initialData={editing}
+      />
     </div>
   );
 };

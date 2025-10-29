@@ -9,7 +9,7 @@ import { ROLES } from '../models/role.js';
 
 const router = express.Router();
 
-router.get('/', getAllStocks);
+router.get('/', authenticateToken, getAllStocks);
 router.post('/', authenticateToken, authorizeRoles(ROLES.STOREKEEPER), addStock);
 router.put('/:stock_id', authenticateToken, authorizeRoles(ROLES.STOREKEEPER), editStock);
 

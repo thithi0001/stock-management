@@ -170,8 +170,8 @@ model restock_requests {
   note                                                       String?                          @db.VarChar(255)
   restock_import_links                                       restock_import_links[]
   products                                                   products                         @relation(fields: [product_id], references: [product_id], onDelete: NoAction, onUpdate: NoAction, map: "restock_requests_ibfk_1")
-  user_accounts_restock_requests_requested_byTouser_accounts user_accounts                    @relation("restock_requests_requested_byTouser_accounts", fields: [requested_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "restock_requests_ibfk_2")
-  user_accounts_restock_requests_notified_toTouser_accounts  user_accounts                    @relation("restock_requests_notified_toTouser_accounts", fields: [notified_to], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "restock_requests_ibfk_3")
+  requestedUser                                              user_accounts                    @relation("restock_requests_requested_byTouser_accounts", fields: [requested_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "restock_requests_ibfk_2")
+  notifiedUser                                               user_accounts                    @relation("restock_requests_notified_toTouser_accounts", fields: [notified_to], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "restock_requests_ibfk_3")
 
   @@index([notified_to], map: "notified_to")
   @@index([product_id], map: "product_id")
@@ -222,8 +222,8 @@ model user_accounts {
   error_reports                                                 error_reports[]
   export_receipts                                               export_receipts[]
   import_receipts                                               import_receipts[]
-  restock_requests_restock_requests_requested_byTouser_accounts restock_requests[]            @relation("restock_requests_requested_byTouser_accounts")
-  restock_requests_restock_requests_notified_toTouser_accounts  restock_requests[]            @relation("restock_requests_notified_toTouser_accounts")
+  requestedRestocks                                             restock_requests[]            @relation("restock_requests_requested_byTouser_accounts")
+  notifiedRestocks                                              restock_requests[]            @relation("restock_requests_notified_toTouser_accounts")
   roles                                                         roles                         @relation(fields: [role_id], references: [role_id], onDelete: NoAction, onUpdate: NoAction, map: "user_accounts_ibfk_1")
 
   @@index([role_id], map: "role_id")

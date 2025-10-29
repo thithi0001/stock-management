@@ -4,8 +4,10 @@ import dotenv from 'dotenv';
 dotenv.config();
 import { getConnection } from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
+import profileRoutes from './routes/profileRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 import stockRoutes from './routes/stockRoutes.js';
+import restockRoutes from './routes/restockRoutes.js';
 import importRoutes from './routes/importRoutes.js';
 import exportRoutes from './routes/exportRoutes.js';
 import approvalExportRoutes from './routes/approvalExportRoutes.js';
@@ -25,8 +27,10 @@ app.get('/api/test', (req, res) => {
 
 // Auth routes
 app.use('/api/auth', authRoutes);
+app.use('/api/profile', profileRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/stocks', stockRoutes);
+app.use('/api/restocks', restockRoutes);
 
 //Nhap hang
 app.use('/api/import', importRoutes);

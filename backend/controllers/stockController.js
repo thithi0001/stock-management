@@ -79,6 +79,6 @@ export const editStock = async (req, res) => {
         return res.json(updated);
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Server error' });
+        return res.status(500).json({ message: 'Failed to update stock' });
     }
 }

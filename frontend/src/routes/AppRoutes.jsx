@@ -7,6 +7,7 @@ import MainLayout from "../components/layout/MainLayout";
 import ProductPage from "../pages/ProductPage";
 import NotFoundPage from "../pages/NotFoundPage";
 import StockPage from "../pages/StockPage";
+import RestockPage from "../pages/RestockPage";
 import GoodsReceiptPage from "../pages/GoodsReceiptPage";
 import ExportPage from "../pages/ExportPage";
 import ApprovalPage from "../pages/ApprovalPage";
@@ -93,6 +94,17 @@ function AppRoutes() {
           <ProtectedRoute allowedRoles={[ROLES.STOREKEEPER]}>
             <MainLayout>
               <ApprovalPage />
+            </MainLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/restocks"
+        element={
+          <ProtectedRoute allowedRoles={[ROLES.STOREKEEPER]}>
+            <MainLayout>
+              <RestockPage />
             </MainLayout>
           </ProtectedRoute>
         }
