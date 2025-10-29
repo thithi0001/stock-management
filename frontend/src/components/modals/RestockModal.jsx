@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
-import useApi from "../../services/api";
+import { useApi } from "../../services/api";
 import { getProducts } from "../../services/productServices";
 
 export default function RestockModal({

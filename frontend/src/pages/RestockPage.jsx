@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { ROLES } from "../constants/roles";
-import useApi from "../services/api";
+import { useApi } from "../services/api";
 import RestockModal from "../components/modals/RestockModal";
 import { getUsersByRole } from "../services/auth"
 import {
