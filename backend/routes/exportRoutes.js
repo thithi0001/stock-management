@@ -9,7 +9,7 @@ const router = express.Router();
 
 // POST /
 // (CẢI TIẾN) Tạo phiếu xuất mới (bao gồm cả chi tiết)
-router.post("/", authenticateToken, authorizeRoles(ROLES.EXPORTSTAFF), createExportReceiptController);
+router.post("/", authenticateToken, authorizeRoles(ROLES.EXPORTSTAFF, ROLES.STOREKEEPER), createExportReceiptController);
 
 
 // GET /
