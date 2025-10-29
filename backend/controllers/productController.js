@@ -65,7 +65,8 @@ export const editProduct = async (req, res) => {
             unit: data.unit ?? existing.unit,
             import_price: data.import_price ?? existing.import_price,
             export_price: data.export_price ?? existing.export_price,
-            minimum: data.minimum ?? existing.minimum
+            minimum: data.minimum ?? existing.minimum,
+            product_status: data.product_status ?? existing.product_status
         };
 
         const updated = await updateProduct(id, payload);

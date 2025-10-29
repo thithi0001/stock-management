@@ -65,11 +65,9 @@ CREATE TABLE user_accounts (
 CREATE TABLE stocks (
   stock_id INT PRIMARY KEY AUTO_INCREMENT,
   product_id INT NOT NULL,
-  quantity INT NOT NULL CHECK (quantity >= 0),
-  -- useable_quantity INT NOT NULL CHECK (useable_quantity >= 0),
-  -- damaged_quantity INT NOT NULL CHECK (damaged_quantity >= 0),
+  quantity INT NOT NULL CHECK (quantity >= 0) DEFAULT 0,
   last_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  warning BIT DEFAULT 0,
+  warning BIT DEFAULT 1,
   stock_status enum('normal','damaged') NOT NULL DEFAULT 'normal',
   FOREIGN KEY (product_id) REFERENCES products(product_id)
 );

@@ -27,3 +27,8 @@ export function getUserFromToken() {
 export function isAuthenticated() {
   return !!getToken();
 }
+
+export const getUsersByRole = async (api, role) => {
+  const res = await api.get(`/api/profile/roles/${role}`);
+  return res.data;
+}

@@ -9,7 +9,8 @@ export async function findAllUsers() {
                     role_name: true
                 }
             }
-        }
+        },
+        omit: { user_password: true }
     });
 }
 
@@ -25,6 +26,24 @@ export async function findUserByUsername(username) {
                 }
             }
         }
+    });
+}
+
+export async function findUsersByRole(role) {
+    return prisma.user_accounts.findMany({
+        where: {
+            roles: {
+                role_name: role
+            }
+        },
+        include: {
+            roles: {
+                select: {
+                    role_name: true
+                }
+            }
+        },
+        omit: { user_password: true }
     });
 }
 

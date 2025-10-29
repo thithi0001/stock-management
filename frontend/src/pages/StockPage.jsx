@@ -56,13 +56,16 @@ const StockPage = () => {
 
   const handleSave = async (data) => {
     try {
-      if (!editing) return;
-      await updateStock(api, editing.stock_id, data);
+      if (editing) {
+        await updateStock(api, editing.stock_id, data);
+      }
       await fetchStocks();
       closeModal();
     } catch (err) {
       console.error("Save stock error", err);
-      alert(err.response?.data?.message || err.message || "Lỗi khi cập nhật tồn kho");
+      alert(
+        err.response?.data?.message || err.message || "Lỗi khi cập nhật tồn kho"
+      );
     }
   };
 
@@ -140,7 +143,9 @@ const StockPage = () => {
               filtered.map((st) => (
                 <tr key={st.stock_id} className="odd:bg-white even:bg-gray-50">
                   <td className="p-2 border">{st.stock_id}</td>
-                  <td className="p-2 border">{st.products?.product_name ?? "-"}</td>
+                  <td className="p-2 border">
+                    {st.products?.product_name ?? "-"}
+                  </td>
                   <td className="p-2 border">{st.quantity ?? 0}</td>
                   <td className="p-2 border">{st.products?.minimum ?? "-"}</td>
                   <td className="p-2 border">{st.warning ? "Yes" : "No"}</td>
@@ -161,7 +166,12 @@ const StockPage = () => {
         </table>
       </div>
 
-      <StockModal open={modalOpen} onClose={closeModal} onSave={handleSave} initialData={editing} />
+      <StockModal
+        open={modalOpen}
+        onClose={closeModal}
+        onSave={handleSave}
+        initialData={editing}
+      />
     </div>
   );
 };

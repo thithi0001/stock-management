@@ -7,6 +7,7 @@ import MainLayout from "../components/layout/MainLayout";
 import ProductPage from "../pages/ProductPage";
 import NotFoundPage from "../pages/NotFoundPage";
 import StockPage from "../pages/StockPage";
+import RestockPage from "../pages/RestockPage";
 
 function AppRoutes() {
   return (
@@ -76,6 +77,17 @@ function AppRoutes() {
           <ProtectedRoute allowedRoles={[ROLES.STOREKEEPER]}>
             <MainLayout>
               <Home />
+            </MainLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/restocks"
+        element={
+          <ProtectedRoute allowedRoles={[ROLES.STOREKEEPER]}>
+            <MainLayout>
+              <RestockPage />
             </MainLayout>
           </ProtectedRoute>
         }

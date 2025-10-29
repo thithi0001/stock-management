@@ -11,6 +11,7 @@ const Sidebar = () => {
     { name: "Sản phẩm", path: "/products", roles: Object.values(ROLES) },
     { name: "Kho hàng", path: "/stocks", roles: [ROLES.MANAGER, ROLES.STOREKEEPER] },
     { name: "Phê duyệt", path: "/approval", roles: [ROLES.STOREKEEPER] },
+    { name: "Yêu cầu nhập hàng", path: "/restocks", roles: [ROLES.STOREKEEPER] },
     { name: "Nhập hàng", path: "/import", roles: [ROLES.IMPORTSTAFF] },
     { name: "Xuất hàng", path: "/export", roles: [ROLES.EXPORTSTAFF] },
     { name: "Nhà cung cấp", path: "/suppliers", roles: Object.values(ROLES) },

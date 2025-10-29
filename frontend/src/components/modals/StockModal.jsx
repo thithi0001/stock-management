@@ -1,16 +1,21 @@
 import React, { useEffect, useState } from "react";
 
-export default function StockModal({ open, onClose, onSave, initialData = null }) {
+export default function StockModal({
+  open,
+  onClose,
+  onSave,
+  initialData = null,
+}) {
   const [form, setForm] = useState({
     quantity: "",
-    stock_status: ""
+    stock_status: "",
   });
 
   useEffect(() => {
     if (initialData) {
       setForm({
         quantity: initialData.quantity ?? "",
-        stock_status: initialData.stock_status ?? ""
+        stock_status: initialData.stock_status ?? "",
       });
     } else {
       setForm({ quantity: "", stock_status: "" });
@@ -28,7 +33,7 @@ export default function StockModal({ open, onClose, onSave, initialData = null }
     e.preventDefault();
     const payload = {
       quantity: form.quantity === "" ? null : Number(form.quantity),
-      stock_status: form.stock_status
+      stock_status: form.stock_status,
     };
     onSave(payload);
   };
@@ -43,23 +48,41 @@ export default function StockModal({ open, onClose, onSave, initialData = null }
         <form onSubmit={handleSubmit} className="space-y-3">
           <div>
             <label className="block text-sm text-gray-600">Tên sản phẩm</label>
-            <input value={prod.product_name ?? "-"} readOnly className="w-full bg-gray-100 border rounded p-2" />
+            <input
+              value={prod.product_name ?? "-"}
+              readOnly
+              className="w-full bg-gray-100 border rounded p-2"
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-sm text-gray-600">Đơn vị</label>
-              <input value={prod.unit ?? "-"} readOnly className="w-full bg-gray-100 border rounded p-2" />
+              <input
+                value={prod.unit ?? "-"}
+                readOnly
+                className="w-full bg-gray-100 border rounded p-2"
+              />
             </div>
             <div>
               <label className="block text-sm text-gray-600">Tối thiểu</label>
-              <input value={prod.minimum ?? "-"} readOnly className="w-full bg-gray-100 border rounded p-2" />
+              <input
+                value={prod.minimum ?? "-"}
+                readOnly
+                className="w-full bg-gray-100 border rounded p-2"
+              />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm text-gray-600">Trạng thái sản phẩm</label>
-            <input value={prod.product_status ?? "-"} readOnly className="w-full bg-gray-100 border rounded p-2" />
+            <label className="block text-sm text-gray-600">
+              Trạng thái sản phẩm
+            </label>
+            <input
+              value={prod.product_status ?? "-"}
+              readOnly
+              className="w-full bg-gray-100 border rounded p-2"
+            />
           </div>
 
           <hr className="my-2" />
@@ -86,15 +109,25 @@ export default function StockModal({ open, onClose, onSave, initialData = null }
               className="w-full border rounded p-2"
               required
             >
-              <option value="">-- Chọn trạng thái --</option>
               <option value="normal">normal</option>
               <option value="damaged">damaged</option>
             </select>
           </div>
 
           <div className="flex justify-end gap-2 mt-4">
-            <button type="button" onClick={onClose} className="px-4 py-2 border rounded">Hủy</button>
-            <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded">Lưu</button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 border rounded"
+            >
+              Hủy
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-blue-600 text-white rounded"
+            >
+              Lưu
+            </button>
           </div>
         </form>
       </div>

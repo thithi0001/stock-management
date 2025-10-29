@@ -40,7 +40,7 @@ export async function createProduct(data) {
     return { product, stock };
 }
 export async function updateProduct(id, data) {
-    const { product_name, unit, import_price, export_price, minimum } = data;
+    const { product_name, unit, import_price, export_price, minimum, product_status } = data;
     return prisma.products.update({
         where: {
             product_id: Number(id)
@@ -50,7 +50,8 @@ export async function updateProduct(id, data) {
             unit,
             import_price,
             export_price,
-            minimum
+            minimum,
+            product_status
         }
     });
 }

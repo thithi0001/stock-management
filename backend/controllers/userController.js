@@ -1,11 +1,13 @@
 import { 
     findAllUsers, 
-    findUserByUsername 
+    findUserByUsername, 
+    findUsersByRole
 } from "../models/userModel.js";
 
 export const getAllUsers = async (req, res) => {
     try {
         const users = await findAllUsers();
+        if (!users.length) return res.status(404).json({ message: 'No users found' });
         return res.json(users);
     } catch (error) {
         console.error(error);
@@ -23,6 +25,18 @@ export const getUserByUsername = async (req, res) => {
         return res.status(500).json({ message: 'Server error' });
     }
 };
+
+export const getUsersByRole = async (req, res) => {
+    try {
+        const users = await findUsersByRole(req.params.role_name);
+        if (!users.length) return res.status(404).json({ message: 'No users found' });
+        return res.json(users);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Server error' });
+    }
+}
+
 
 export const addUser = async (req, res) => {
     try {
