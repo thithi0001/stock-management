@@ -14,6 +14,7 @@ import ApprovalPage from "../pages/ApprovalPage";
 import CustomerPage from "../pages/CustomerPage";
 import SupplierPage from "../pages/SupplierPage";
 import ImportPage from "../pages/ImportPage";
+import ApprovalImportPage from "../pages/ApprovalImportPage";
 
 function AppRoutes() {
   return (
@@ -71,7 +72,7 @@ function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={[ROLES.IMPORTSTAFF, ROLES.STOREKEEPER]}>
             <MainLayout>
-              <GoodsReceiptPage />
+              <ApprovalImportPage />
             </MainLayout>
           </ProtectedRoute>
         }

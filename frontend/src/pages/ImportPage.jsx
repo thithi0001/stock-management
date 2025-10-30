@@ -1,11 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-// (ĐÃ THAY ĐỔI) Xóa createImportReceipt, getSuppliers, getProducts
-import { 
-  fetchImportReceipts,
-  fetchImportReceiptById
-} from '../services/importService';
+import { fetchImportReceipts, fetchImportReceiptById } from '../services/importService';
+// (ĐÃ SỬA) Đổi tên 'getRestockRequests' thành 'getAllRestockRequests'
+import { getAllRestockRequests } from '../services/restockServices';
 import { useApi } from '../services/api';
-// (ĐÃ THÊM) Import Modal
 import ImportModal from '../components/modals/ImportModal'; 
 
 // --- Helpers (Giữ nguyên) ---
@@ -16,46 +13,55 @@ const formatDate = (dateString) => {
   const options = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' };
   return new Date(dateString).toLocaleString('vi-VN', options);
 };
-const STATUS_CONFIG = {
+// Trạng thái phiếu nhập
+const RECEIPT_STATUS_CONFIG = {
   pending: { text: "Chờ duyệt", className: "bg-yellow-100 text-yellow-800" },
   approved: { text: "Đã duyệt", className: "bg-green-100 text-green-800" },
   rejected: { text: "Đã từ chối", className: "bg-red-100 text-red-800" },
 };
-const TABS = [
-  { key: 'all', label: 'Tất cả' },
-  { key: 'pending', label: 'Chờ duyệt' },
-  { key: 'approved', label: 'Đã duyệt' },
-  { key: 'rejected', label: 'Đã từ chối' },
+// (MỚI) Trạng thái yêu cầu
+const REQUEST_STATUS_CONFIG = {
+  pending: { text: "Chờ xử lý", className: "bg-blue-100 text-blue-800" },
+  fulfilled: { text: "Đã xử lý", className: "bg-gray-100 text-gray-800" },
+};
+// (MỚI) Tabs nghiệp vụ
+const VIEW_TABS = [
+  { key: 'requests', label: 'Yêu cầu nhập hàng' },
+  { key: 'receipts', label: 'Lịch sử phiếu nhập' },
 ];
 
-// --- Component Modal Tạo Phiếu Nhập (ĐÃ BỊ XÓA) ---
-// ...
-// ... Code của ImportModal đã được chuyển sang file riêng
-// ...
 
-
-// --- Component Trang Chính ---
 export default function ImportPage() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [list, setList] = useState([]);
+  const [view, setView] = useState('requests'); // 'requests' hoặc 'receipts'
+  const [restockRequests, setRestockRequests] = useState([]);
+  const [importReceipts, setImportReceipts] = useState([]);
+  
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [currentStatus, setCurrentStatus] = useState('all');
 
-  // State cho modal chi tiết
+  // State cho modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState(null);
+  
+  // State cho modal chi tiết (của phiếu nhập)
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [detailData, setDetailData] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
 
   const api = useApi();
 
-  // Load danh sách phiếu nhập
-  const load = useCallback(async (status) => {
+  // (CẬP NHẬT) Load cả Yêu cầu và Phiếu nhập
+  const loadData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetchImportReceipts(api, status);
-      setList(res ?? []);
+      // 1. (ĐÃ SỬA) Đổi tên hàm
+      const reqRes = await getAllRestockRequests(api);
+      setRestockRequests(reqRes ?? []);
+      
+      // 2. Lấy Phiếu nhập
+      const receiptRes = await fetchImportReceipts(api, 'all'); // Lấy tất cả
+      setImportReceipts(receiptRes ?? []);
     } catch (e) {
       console.error(e);
       setError(e.message || "Không thể tải danh sách");
@@ -65,14 +71,20 @@ export default function ImportPage() {
   }, [api]);
 
   useEffect(() => {
-    load(currentStatus);
-  }, [load, currentStatus]);
+    loadData();
+  }, [loadData]);
 
   const handleCreated = () => {
-    load(currentStatus); // Tải lại danh sách sau khi tạo
+    loadData(); // Tải lại cả 2 danh sách sau khi tạo
   };
 
-  // Mở modal xem chi tiết
+  // (MỚI) Mở modal tạo phiếu nhập
+  const handleOpenCreateModal = (request) => {
+    setSelectedRequest(request);
+    setIsModalOpen(true);
+  };
+  
+  // (CŨ) Mở modal xem chi tiết
   const handleViewDetails = async (id) => {
     setIsDetailOpen(true);
     setDetailLoading(true);
@@ -95,17 +107,18 @@ export default function ImportPage() {
 
   // --- Render Functions ---
 
-  const renderTabs = () => (
+  // (MỚI) Render Tabs nghiệp vụ
+  const renderViewTabs = () => (
     <div className="flex border-b border-gray-200 mb-6">
-      {TABS.map(tab => (
+      {VIEW_TABS.map(tab => (
         <button
           key={tab.key}
           className={`py-3 px-5 text-gray-600 font-medium cursor-pointer border-b-2 transition duration-150 ease-in-out
-            ${currentStatus === tab.key 
+            ${view === tab.key 
               ? 'text-blue-600 border-blue-600' 
               : 'border-transparent hover:bg-gray-100 hover:text-gray-800'
             }`}
-          onClick={() => setCurrentStatus(tab.key)}
+          onClick={() => setView(tab.key)}
         >
           {tab.label}
         </button>
@@ -113,10 +126,64 @@ export default function ImportPage() {
     </div>
   );
 
-  const renderTable = () => {
-    if (loading) return <div className="p-10 text-center text-lg text-gray-500">Đang tải dữ liệu...</div>;
+  // (MỚI) Bảng hiển thị các Yêu cầu
+  const renderRequestsTable = () => {
+    // Lọc các yêu cầu đang chờ xử lý (pending)
+    const pendingRequests = restockRequests.filter(r => r.request_status === 'pending');
+    
+    if (loading) return <div className="p-10 text-center text-lg text-gray-500">Đang tải...</div>;
     if (error) return <div className="p-4 text-center text-red-700 bg-red-100 border border-red-300 rounded-md">Lỗi: {error}</div>;
-    if (list.length === 0) return <div className="p-10 text-center text-lg text-gray-500">Không có phiếu nhập nào.</div>;
+    if (pendingRequests.length === 0) return <div className="p-10 text-center text-lg text-gray-500">Không có yêu cầu nào cần xử lý.</div>;
+
+    return (
+      <div className="shadow-md rounded-lg overflow-hidden">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID Yêu cầu</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sản phẩm</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SL Yêu cầu</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày Yêu cầu</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hành động</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {pendingRequests.map(r => {
+              const statusInfo = REQUEST_STATUS_CONFIG[r.request_status] || { text: r.request_status, className: "bg-gray-100 text-gray-800" };
+              return (
+                <tr key={r.request_id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{r.request_id}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{r.products?.product_name || 'N/A'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-bold">{r.requested_quantity}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{formatDate(r.requested_at)}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`py-1 px-3 rounded-full text-xs font-semibold inline-block ${statusInfo.className}`}>
+                      {statusInfo.text}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <button 
+                      className="text-blue-600 hover:text-blue-800 font-medium" 
+                      onClick={() => handleOpenCreateModal(r)}
+                    >
+                      Tạo phiếu nhập
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
+  // (CẬP NHẬT) Bảng hiển thị Lịch sử (đổi tên từ renderTable)
+  const renderReceiptsTable = () => {
+    if (loading) return <div className="p-10 text-center text-lg text-gray-500">Đang tải...</div>;
+    if (error) return <div className="p-4 text-center text-red-700 bg-red-100 border border-red-300 rounded-md">Lỗi: {error}</div>;
+    if (importReceipts.length === 0) return <div className="p-10 text-center text-lg text-gray-500">Không có phiếu nhập nào.</div>;
 
     return (
       <div className="shadow-md rounded-lg overflow-hidden">
@@ -133,8 +200,8 @@ export default function ImportPage() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {list.map(r => {
-              const statusInfo = STATUS_CONFIG[r.receipt_status] || { text: r.receipt_status, className: "bg-gray-100 text-gray-800" };
+            {importReceipts.map(r => {
+              const statusInfo = RECEIPT_STATUS_CONFIG[r.receipt_status] || { text: r.receipt_status, className: "bg-gray-100 text-gray-800" };
               return (
                 <tr key={r.receipt_id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{r.receipt_id}</td>
@@ -161,9 +228,9 @@ export default function ImportPage() {
     );
   };
   
+  // (GIỮ NGUYÊN) Modal xem chi tiết
   const renderDetailModal = () => {
     if (!isDetailOpen) return null;
-
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 z-40 flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl">
@@ -216,32 +283,30 @@ export default function ImportPage() {
     );
   };
 
+  // --- Render chính ---
   return (
     <div className="p-6 min-h-screen">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-800">Quản lý Phiếu Nhập</h1>
-        <button 
-          className="px-5 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition duration-150 ease-in-out" 
-          onClick={() => setIsModalOpen(true)}
-        >
-          + Tạo phiếu nhập
-        </button>
       </div>
 
-      {/* Modal tạo phiếu nhập */}
+      {/* Modal tạo phiếu nhập (chỉ mở khi có selectedRequest) */}
       <ImportModal 
         open={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
         onCreated={handleCreated} 
+        restockRequest={selectedRequest} // (MỚI) Truyền yêu cầu vào modal
       />
       
       {/* Modal xem chi tiết */}
       {renderDetailModal()}
 
-      {renderTabs()}
+      {/* (MỚI) Hiển thị tabs nghiệp vụ */}
+      {renderViewTabs()}
       
+      {/* (MỚI) Hiển thị bảng dựa trên tab đang chọn */}
       <div className="bg-white p-6 rounded-lg shadow-sm">
-        {renderTable()}
+        {view === 'requests' ? renderRequestsTable() : renderReceiptsTable()}
       </div>
     </div>
   );
