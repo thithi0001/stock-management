@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { fetchImportReceipts, fetchImportReceiptById } from '../services/importService';
 import { getAllRestockRequests } from '../services/restockServices';
 import { useApi } from '../services/api';
-import ImportModal from '../components/modals/ImportModal'; 
+import ImportModal from '../components/modals/ImportModal';
 import { useRefresh } from '../context/RefreshContext';
 
 // --- Helpers (Giữ nguyên) ---
@@ -85,8 +85,8 @@ export default function ImportPage() {
   }, [api]);
 
   useEffect(() => {
-    load(currentStatus);
-  }, [load, currentStatus, refreshKey]);
+    loadData();
+  }, [loadData, refreshKey]);
 
   const handleCreated = () => {
     loadData(); // Tải lại cả 2 danh sách sau khi tạo

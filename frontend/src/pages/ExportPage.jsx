@@ -3,7 +3,6 @@ import ExportModal from '../components/modals/ExportModal';
 import { fetchExportReceipts, fetchExportById } from '../services/exportService';
 import { useApi } from '../services/api';
 import { useRefresh } from '../context/RefreshContext';
-// import { useNavigate } from 'react-router-dom'; // Tùy chọn nếu bạn muốn dùng navigate
 
 // --- Helpers (Giữ nguyên) ---
 const formatCurrency = (value) => {
@@ -44,7 +43,6 @@ export default function ExportPage() {
 
   const api = useApi();
   const { refreshKey, triggerRefresh } = useRefresh();
-  // const navigate = useNavigate(); // Tùy chọn
 
   // (CẬP NHẬT) Hàm load giờ nhận status từ state 'exportStatusFilter'
   const load = useCallback(async (status) => {
@@ -64,8 +62,8 @@ export default function ExportPage() {
 
   // (CẬP NHẬT) useEffect gọi load khi status filter thay đổi
   useEffect(() => {
-    load(currentStatus);
-  }, [load, currentStatus, refreshKey]);
+    load(exportStatusFilter);
+  }, [load, exportStatusFilter, refreshKey]);
 
   // Hàm onCreated chỉ cần tải lại status hiện tại
   const handleCreated = () => {
