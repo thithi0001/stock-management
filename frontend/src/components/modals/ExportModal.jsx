@@ -43,7 +43,7 @@ export default function ExportModal({ open, onClose, onCreated }) {
     })();
 
     return () => { cancelled = true; };
-  }, [open, api]);
+  }, [open, api, ]);
 
   const addLine = () => setLines([...lines, { product_id: '', quantity: 1, unit_price: 0 }]);
   const removeLine = (i) => setLines(lines.filter((_, idx) => idx !== i));

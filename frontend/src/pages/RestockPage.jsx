@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { toast } from 'react-toastify';
 import { useAuth } from "../context/AuthContext";
 import { ROLES } from "../constants/roles";
 import { useApi } from "../services/api";
@@ -11,10 +12,12 @@ import {
   getAllRestockRequests,
   getRestockRequestById,
 } from "../services/restockServices";
+import { useRefresh } from "../context/RefreshContext";
 
 const RestockPage = () => {
   const { token } = useAuth();
   const api = useApi();
+  const { refreshKey, triggerRefresh } = useRefresh();
   const [restocks, setRestocks] = useState([]);
   const [links, setLinks] = useState([]);
   const [search, setSearch] = useState("");
@@ -61,7 +64,7 @@ const RestockPage = () => {
 
   useEffect(() => {
     if (token) fetchRestocks();
-  }, [token]);
+  }, [token, refreshKey]);
 
   const statusOptions = useMemo(() => {
     const s = new Set(restocks.map((s) => s.request_status).filter(Boolean));
@@ -89,10 +92,11 @@ const RestockPage = () => {
     try {
       await createRestockRequest(api, data);
       await fetchRestocks();
+      triggerRefresh();
       closeModal();
     } catch (error) {
       console.error("Save restock request error", error);
-      alert(
+      toast.error(
         error.response?.data?.message ||
           error.message ||
           "Lỗi khi tạo yêu cầu nhập hàng"

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import GoodsReceiptModal from '../components/modals/GoodsReceiptModal'; // Import modal mới
+import { toast } from 'react-toastify';
 
 // Dữ liệu fake: Dùng cấu trúc chi tiết hơn để truyền vào Modal
 const fakeApprovedPOs = [
@@ -58,7 +59,7 @@ export default function GoodsReceiptPage() {
 
   // Xử lý logic sau khi xác nhận nhập kho
   const handleConfirmReceiptLogic = (po_id, receivedData) => {
-    alert(`Đã tạo Phiếu Nhập Kho (GR) cho PO #${po_id}! Tồn kho đã được cập nhật.`);
+    toast.success(`Đã tạo Phiếu Nhập Kho (GR) cho PO #${po_id}! Tồn kho đã được cập nhật.`);
     // Cập nhật UI: Xóa PO đã nhập khỏi danh sách
     setApprovedOrders(approvedOrders.filter(po => po.id !== po_id));
     handleCloseModal();
@@ -66,7 +67,7 @@ export default function GoodsReceiptPage() {
   
   // Xử lý logic sau khi báo cáo lỗi
   const handleReportLogic = (po_id, discrepanciesData) => {
-    alert(`Đã tạo Biên bản lỗi cho PO #${po_id}!`);
+    toast.success(`Đã tạo Biên bản lỗi cho PO #${po_id}!`);
     // Cập nhật UI: Xóa PO đã xử lý khỏi danh sách
     setApprovedOrders(approvedOrders.filter(po => po.id !== po_id));
     handleCloseModal();

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useApi } from "../../services/api";
 import { getProducts } from "../../services/productServices";
+import { toast } from 'react-toastify';
 
 export default function RestockModal({
   open,
@@ -79,14 +80,14 @@ export default function RestockModal({
     e.preventDefault();
 
     if (!form.product_id.trim()) {
-      return alert("Id hàng là bắt buộc");
+      return toast.warn("Id hàng là bắt buộc");
     }
 
     if (
       form.requested_quantity !== "" &&
       !/^\d+$/.test(form.requested_quantity)
     ) {
-      return alert("Số lượng yêu cầu phải là số nguyên không âm");
+      return toast.warn("Số lượng yêu cầu phải là số nguyên không âm");
     }
 
     const payload = {

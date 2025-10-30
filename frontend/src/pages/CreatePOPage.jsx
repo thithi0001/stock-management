@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 // Dữ liệu fake cho sản phẩm và nhà cung cấp
 const fakeSuppliers = [
@@ -59,7 +60,7 @@ export default function CreatePOPage() {
     e.preventDefault();
     // Logic gửi dữ liệu
     console.log({ supplier, products });
-    alert('Đã tạo Phiếu yêu cầu nhập hàng mới!');
+    toast.success('Đã tạo Phiếu yêu cầu nhập hàng mới!');
     navigate('/import');
   };
 

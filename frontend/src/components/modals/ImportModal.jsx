@@ -3,6 +3,7 @@ import { createImportReceipt } from '../../services/importService';
 import { useApi } from '../../services/api';
 import { getSuppliers } from '../../services/supplierService';
 import { getProducts } from '../../services/productServices';
+import { toast } from 'react-toastify';
 
 // --- Helpers ---
 const formatCurrency = (value) => {
@@ -109,12 +110,13 @@ export default function ImportModal({ open, onClose, onCreated }) {
 
       const res = await createImportReceipt(api, finalPayload);
       
-      alert(res.message || "Tạo phiếu nhập thành công!");
+      toast.success(res?.message || "Tạo phiếu nhập thành công!");
       onCreated && onCreated(); 
       onClose(); 
     } catch (e) {
       console.error(e);
       setError(e?.response?.data?.message || e?.message || 'Lỗi khi tạo phiếu nhập');
+      toast.error(error);
     } finally {
       setLoading(false);
     }

@@ -6,6 +6,8 @@ import {
   deleteSupplier 
 } from '../services/supplierService';
 import {useApi} from '../services/api';
+import { toast } from 'react-toastify';
+import { useRefresh } from '../context/RefreshContext';
 
 // Component con: Modal Thêm/Sửa
 const SupplierModal = ({ open, onClose, onSave, supplier, loading }) => {
@@ -134,6 +136,7 @@ export default function SupplierPage() {
   const [editingSupplier, setEditingSupplier] = useState(null);
 
   const api = useApi();
+  const { refreshKey, triggerRefresh } = useRefresh();
 
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
@@ -156,7 +159,7 @@ export default function SupplierPage() {
   // useEffect chính
   useEffect(() => {
     fetchSuppliers(currentPage, debouncedSearchQuery);
-  }, [fetchSuppliers, currentPage, debouncedSearchQuery]);
+  }, [fetchSuppliers, currentPage, debouncedSearchQuery, refreshKey]);
 
   // --- Xử lý Modal ---
   const handleOpenCreate = () => {
@@ -182,17 +185,18 @@ export default function SupplierPage() {
       if (formData.supplier_id) {
         // Cập nhật
         await updateSupplier(api, formData.supplier_id, formData);
-        alert('Cập nhật nhà cung cấp thành công!');
+        toast.success('Cập nhật nhà cung cấp thành công!');
       } else {
         // Thêm mới
         await createSupplier(api, formData);
-        alert('Thêm nhà cung cấp thành công!');
+        toast.success('Thêm nhà cung cấp thành công!');
       }
       handleCloseModal();
       fetchSuppliers(currentPage, debouncedSearchQuery); // Tải lại dữ liệu
+      triggerRefresh();
     } catch (err) {
       console.error(err);
-      alert(`Lỗi: ${err.response?.data?.message || err.message}`);
+      toast.error(`Lỗi: ${err.response?.data?.message || err.message}`);
     } finally {
       setModalLoading(false);
     }
@@ -202,11 +206,12 @@ export default function SupplierPage() {
     if (window.confirm('Bạn có chắc chắn muốn xoá nhà cung cấp này?')) {
       try {
         await deleteSupplier(api, id);
-        alert('Xoá nhà cung cấp thành công!');
+        toast.success('Xoá nhà cung cấp thành công!');
         fetchSuppliers(currentPage, debouncedSearchQuery); 
+        triggerRefresh();
       } catch (err) {
         console.error(err);
-        alert(`Lỗi: ${err.response?.data?.message || err.message}`);
+        toast.error(`Lỗi: ${err.response?.data?.message || err.message}`);
       }
     }
   };

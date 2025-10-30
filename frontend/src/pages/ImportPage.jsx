@@ -7,6 +7,7 @@ import {
 import { useApi } from '../services/api';
 // (ĐÃ THÊM) Import Modal
 import ImportModal from '../components/modals/ImportModal'; 
+import { useRefresh } from '../context/RefreshContext';
 
 // --- Helpers (Giữ nguyên) ---
 const formatCurrency = (value) => {
@@ -48,6 +49,7 @@ export default function ImportPage() {
   const [detailLoading, setDetailLoading] = useState(false);
 
   const api = useApi();
+  const { refreshKey, triggerRefresh } = useRefresh();
 
   // Load danh sách phiếu nhập
   const load = useCallback(async (status) => {
@@ -66,7 +68,7 @@ export default function ImportPage() {
 
   useEffect(() => {
     load(currentStatus);
-  }, [load, currentStatus]);
+  }, [load, currentStatus, refreshKey]);
 
   const handleCreated = () => {
     load(currentStatus); // Tải lại danh sách sau khi tạo

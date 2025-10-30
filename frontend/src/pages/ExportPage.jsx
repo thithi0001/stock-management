@@ -3,6 +3,7 @@ import ExportModal from '../components/modals/ExportModal';
 // 1. IMPORT CẢ 2 HÀM
 import { fetchExportReceipts, fetchExportById } from '../services/exportService';
 import { useApi } from '../services/api';
+import { useRefresh } from '../context/RefreshContext';
 // import { useNavigate } from 'react-router-dom'; // Tùy chọn nếu bạn muốn dùng navigate
 
 // --- Helpers (Copy từ ApprovalPage) ---
@@ -38,6 +39,7 @@ export default function ExportPage() {
   const [detailLoading, setDetailLoading] = useState(false);
 
   const api = useApi();
+  const { refreshKey, triggerRefresh } = useRefresh();
   // const navigate = useNavigate(); // Tùy chọn
 
   // 3. Cập nhật hàm load để nhận status
@@ -60,7 +62,7 @@ export default function ExportPage() {
   // 4. useEffect gọi load khi status thay đổi
   useEffect(() => {
     load(currentStatus);
-  }, [load, currentStatus]);
+  }, [load, currentStatus, refreshKey]);
 
   // 5. Hàm onCreated tải lại tab hiện tại
   const handleCreated = () => {
