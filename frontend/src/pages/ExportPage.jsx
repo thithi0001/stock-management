@@ -1,11 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import ExportModal from '../components/modals/ExportModal';
-// 1. IMPORT CẢ 2 HÀM
 import { fetchExportReceipts, fetchExportById } from '../services/exportService';
 import { useApi } from '../services/api';
-// import { useNavigate } from 'react-router-dom'; // Tùy chọn nếu bạn muốn dùng navigate
 
-// --- Helpers (Copy từ ApprovalPage) ---
+// --- Helpers (Giữ nguyên) ---
 const formatCurrency = (value) => {
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
 };
@@ -18,8 +16,9 @@ const STATUS_CONFIG = {
   approved: { text: "Đã duyệt", className: "bg-green-100 text-green-800" },
   rejected: { text: "Đã từ chối", className: "bg-red-100 text-red-800" },
 };
-const TABS = [
-  { key: 'all', label: 'Tất cả' },
+// (ĐÃ SỬA) Đổi tên TABS thành STATUS_FILTER_OPTIONS cho rõ nghĩa
+const STATUS_FILTER_OPTIONS = [
+  { key: 'all', label: 'Tất cả trạng thái' },
   { key: 'pending', label: 'Chờ duyệt' },
   { key: 'approved', label: 'Đã duyệt' },
   { key: 'rejected', label: 'Đã từ chối' },
@@ -30,7 +29,11 @@ export default function ExportPage() {
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [currentStatus, setCurrentStatus] = useState('all'); // 2. Thêm state cho tab
+  
+  // (MỚI) State cho Tìm kiếm và Lọc
+  const [exportSearch, setExportSearch] = useState('');
+  const [exportStatusFilter, setExportStatusFilter] = useState('all'); // Mặc định là 'all'
+  const debouncedExportSearch = useDebounce(exportSearch, 300);
 
   // State cho modal chi tiết
   const [isDetailOpen, setIsDetailOpen] = useState(false);
@@ -38,16 +41,14 @@ export default function ExportPage() {
   const [detailLoading, setDetailLoading] = useState(false);
 
   const api = useApi();
-  // const navigate = useNavigate(); // Tùy chọn
 
-  // 3. Cập nhật hàm load để nhận status
+  // (CẬP NHẬT) Hàm load giờ nhận status từ state 'exportStatusFilter'
   const load = useCallback(async (status) => {
     setLoading(true);
     setError(null);
     try {
-      // Gọi API với status
+      // Gọi API với status được chọn
       const res = await fetchExportReceipts(api, status);
-      // Service trả về mảng dữ liệu
       setList(res ?? []);
     } catch (e) {
       console.error(e);
@@ -57,23 +58,22 @@ export default function ExportPage() {
     }
   }, [api]);
 
-  // 4. useEffect gọi load khi status thay đổi
+  // (CẬP NHẬT) useEffect gọi load khi status filter thay đổi
   useEffect(() => {
-    load(currentStatus);
-  }, [load, currentStatus]);
+    load(exportStatusFilter);
+  }, [load, exportStatusFilter]);
 
-  // 5. Hàm onCreated tải lại tab hiện tại
+  // Hàm onCreated chỉ cần tải lại status hiện tại
   const handleCreated = () => {
-    load(currentStatus);
+    load(exportStatusFilter);
   };
 
-  // 6. Hàm mở modal chi tiết
+  // Hàm mở modal chi tiết (Giữ nguyên)
   const handleViewDetails = async (id) => {
     setIsDetailOpen(true);
     setDetailLoading(true);
     try {
       const res = await fetchExportById(api, id);
-      // Controller trả về { data: receipt }
       setDetailData(res.data);
     } catch (err) {
       console.error(err);
@@ -91,28 +91,48 @@ export default function ExportPage() {
 
   // --- Render Functions ---
 
-  const renderTabs = () => (
-    <div className="flex border-b border-gray-200 mb-6">
-      {TABS.map(tab => (
-        <button
-          key={tab.key}
-          className={`py-3 px-5 text-gray-600 font-medium cursor-pointer border-b-2 transition duration-150 ease-in-out
-            ${currentStatus === tab.key 
-              ? 'text-blue-600 border-blue-600' 
-              : 'border-transparent hover:bg-gray-100 hover:text-gray-800'
-            }`}
-          onClick={() => setCurrentStatus(tab.key)}
+  // (MỚI) Render thanh tìm kiếm/lọc
+  const renderFilterControls = () => {
+    return (
+      <div className="flex flex-wrap gap-4 mb-4">
+        <input 
+          type="text"
+          value={exportSearch}
+          onChange={(e) => setExportSearch(e.target.value)}
+          placeholder="Tìm theo Khách hàng, Người tạo, ID Phiếu..."
+          className="flex-grow px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          style={{ minWidth: '250px' }}
+        />
+        <select
+          value={exportStatusFilter}
+          onChange={(e) => setExportStatusFilter(e.target.value)}
+          className="px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
-          {tab.label}
-        </button>
-      ))}
-    </div>
-  );
+          {STATUS_FILTER_OPTIONS.map(opt => (
+            <option key={opt.key} value={opt.key}>{opt.label}</option>
+          ))}
+        </select>
+      </div>
+    );
+  };
 
+  // (CẬP NHẬT) Bảng hiển thị (thêm logic filter)
   const renderTable = () => {
+    // (MỚI) Lọc danh sách trước khi render
+    const filteredList = list.filter(r => {
+      if (!debouncedExportSearch) return true;
+      const query = debouncedExportSearch.toLowerCase();
+      return (
+        (r.customers?.customer_name || '').toLowerCase().includes(query) ||
+        (r.user_accounts?.full_name || '').toLowerCase().includes(query) ||
+        r.receipt_id.toString().includes(query)
+      );
+    });
+
     if (loading) return <div className="p-10 text-center text-lg text-gray-500">Đang tải dữ liệu...</div>;
     if (error) return <div className="p-4 text-center text-red-700 bg-red-100 border border-red-300 rounded-md">Lỗi: {error}</div>;
-    if (list.length === 0) return <div className="p-10 text-center text-lg text-gray-500">Không có phiếu xuất nào.</div>;
+    // (ĐÃ SỬA) Kiểm tra filteredList thay vì list
+    if (filteredList.length === 0) return <div className="p-10 text-center text-lg text-gray-500">Không có phiếu xuất nào khớp.</div>;
 
     return (
       <div className="shadow-md rounded-lg overflow-hidden">
@@ -129,7 +149,8 @@ export default function ExportPage() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {list.map(r => {
+            {/* (ĐÃ SỬA) Map qua filteredList */}
+            {filteredList.map(r => {
               const statusInfo = STATUS_CONFIG[r.receipt_status] || { text: r.receipt_status, className: "bg-gray-100 text-gray-800" };
               return (
                 <tr key={r.receipt_id} className="hover:bg-gray-50">
@@ -147,9 +168,15 @@ export default function ExportPage() {
                     <button className="text-blue-600 hover:text-blue-800 font-medium" onClick={() => handleViewDetails(r.receipt_id)}>
                       Xem
                     </button>
-                    {/* Tùy chọn: Dùng navigate nếu bạn có route
-                    <button className="text-blue-600" onClick={() => navigate(`/export/${r.receipt_id}`)}>Xem</button>
-                    */}
+                    {/* (MỚI) Thêm nút xem lý do từ chối */}
+                    {r.receipt_status === 'rejected' && (
+                      <button 
+                        className="text-red-600 hover:text-red-800 font-medium ml-3" 
+                        onClick={() => handleViewDetails(r.receipt_id)}
+                      >
+                        Xem lý do
+                      </button>
+                    )}
                   </td>
                 </tr>
               );
@@ -160,8 +187,13 @@ export default function ExportPage() {
     );
   };
   
+  // (CẬP NHẬT) Modal xem chi tiết (thêm hiển thị lý do)
   const renderDetailModal = () => {
     if (!isDetailOpen) return null;
+    
+    // (MỚI) Lấy thông tin duyệt/từ chối (nếu có)
+    // Giả định backend trả về approval_exports trong chi tiết phiếu
+    const approvalInfo = detailData?.approval_exports?.[0];
 
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 z-40 flex items-center justify-center p-4">
@@ -177,6 +209,19 @@ export default function ExportPage() {
               <div className="p-4 text-center text-red-700 bg-red-100 border border-red-300 rounded-md">Lỗi: {error}</div>
             ) : detailData ? (
               <>
+                 {/* (MỚI) Hiển thị lý do từ chối nếu có */}
+                {detailData.receipt_status === 'rejected' && approvalInfo && (
+                  <div className="p-3 bg-red-50 border-l-4 border-red-400 rounded-md mb-4">
+                    <p className="font-semibold text-red-800">Bị từ chối bởi: {approvalInfo.user_accounts?.full_name || 'N/A'}</p>
+                    <p className="text-red-700 mt-1"><strong>Lý do:</strong> {approvalInfo.reason || 'Không có lý do.'}</p>
+                  </div>
+                )}
+                 {detailData.receipt_status === 'approved' && approvalInfo && (
+                  <div className="p-3 bg-green-50 border-l-4 border-green-400 rounded-md mb-4">
+                    <p className="font-semibold text-green-800">Đã duyệt bởi: {approvalInfo.user_accounts?.full_name || 'N/A'}</p>
+                  </div>
+                )}
+
                 <div className="pb-4 mb-4 border-b border-gray-200">
                   <p><strong>ID Phiếu:</strong> #{detailData.receipt_id}</p>
                   <p><strong>Khách hàng:</strong> {detailData.customers?.customer_name}</p>
@@ -215,6 +260,7 @@ export default function ExportPage() {
     );
   };
 
+  // --- Render chính ---
   return (
     <div className="p-6 min-h-screen">
       <div className="flex justify-between items-center mb-6">
@@ -232,12 +278,28 @@ export default function ExportPage() {
       
       {/* Modal xem chi tiết */}
       {renderDetailModal()}
-
-      {renderTabs()}
       
+      {/* (MỚI) Thêm thanh Filter */}
+      {renderFilterControls()}
+
+      {/* Bảng dữ liệu */}
       <div className="bg-white p-6 rounded-lg shadow-sm">
         {renderTable()}
       </div>
     </div>
   );
+}
+
+// (MỚI) Thêm hook useDebounce
+function useDebounce(value, delay) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+  return debouncedValue;
 }
