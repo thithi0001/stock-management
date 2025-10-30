@@ -14,6 +14,7 @@ import CustomerPage from "../pages/CustomerPage";
 import SupplierPage from "../pages/SupplierPage";
 import ImportPage from "../pages/ImportPage";
 import ApprovalImportPage from "../pages/ApprovalImportPage";
+import ProfilePage from "../pages/ProfilePage";
 
 function AppRoutes() {
   return (
@@ -23,11 +24,11 @@ function AppRoutes() {
 
       {/* Protected */}
       <Route
-        path="/"
+        path="/profile"
         element={
           <ProtectedRoute>
             <MainLayout>
-              <Home />
+              <ProfilePage />
             </MainLayout>
           </ProtectedRoute>
         }
@@ -145,7 +146,7 @@ function AppRoutes() {
 
       <Route path="/notfound" element={<NotFoundPage />} />
 
-      <Route path="*" element={<Navigate to="/" />} />
+      <Route path="*" element={<Navigate to="/profile" />} />
     </Routes>
   );
 }

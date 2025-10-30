@@ -67,16 +67,45 @@ export async function createUser(data) {
     });
 }
 
-export async function updateUserInfor(user_id, data) {
+export async function updateUserInfor(username, data) {
+    const { full_name, phone, email } = data;
 
+    return prisma.user_accounts.update({
+        where: {
+            username
+        },
+        data: {
+            full_name,
+            phone,
+            email
+        }
+    })
 }
 
-export async function updateAccountStatus(user_id, newStatus) {
-
+export async function updateAccountStatus(username, newStatus) {
+    return prisma.user_accounts.update({
+        where: {
+            username
+        },
+        data: {
+            account_status: newStatus
+        }
+    })
 }
 
-export async function updatePassword(user_id, newPassword) {
-
+export async function updatePassword(username, hashedPassword) {
+    return prisma.user_accounts.update({
+        where: {
+            username
+        },
+        data: {
+            user_password: hashedPassword
+        }
+    })
 }
 
-
+export async function verifyUserPassword(username, inputPassword) {
+  const user = await findUserByUsername(username);
+  if (!user) return false;
+  return await bcrypt.compare(inputPassword, user.user_password);
+}

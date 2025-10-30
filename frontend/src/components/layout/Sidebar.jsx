@@ -7,7 +7,7 @@ const Sidebar = () => {
   const { pathname } = useLocation();
 
   const links = [
-    { name: "Home", path: "/", roles: Object.values(ROLES) },
+    { name: "Tài khoản", path: "/profile", roles: Object.values(ROLES) },
     { name: "Sản phẩm", path: "/products", roles: Object.values(ROLES) },
     { name: "Kho hàng", path: "/stocks", roles: [ROLES.MANAGER, ROLES.STOREKEEPER] },
     { name: "Yêu cầu nhập hàng", path: "/restocks", roles: [ROLES.STOREKEEPER] },

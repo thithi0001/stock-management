@@ -32,3 +32,18 @@ export const getUsersByRole = async (api, role) => {
   const res = await api.get(`/api/profile/roles/${role}`);
   return res.data;
 }
+
+export const getUserByUsername = async (api, username) => {
+  const res = await api.get("/api/profile", username);
+  return res.data;
+}
+
+export const changePassword = async (api, username, oldPassword, newPassword) => {
+  const res = await api.put(`/api/profile/${username}/change-password/`, { oldPassword, newPassword });
+  return res.data;
+}
+
+export const updateProfile = async (api, username, updatedData) => {
+  const res = await api.put(`/api/profile/${username}/edit`, updatedData);
+  return res.data;
+}
