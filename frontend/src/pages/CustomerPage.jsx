@@ -6,6 +6,8 @@ import {
   deleteCustomer 
 } from '../services/customerServices';
 import {useApi} from '../services/api';
+import { toast } from 'react-toastify';
+import { useRefresh } from '../context/RefreshContext';
 
 // Component con: Modal Thêm/Sửa
 // (Bạn có thể tách ra file riêng, ví dụ: CustomerModal.jsx)
@@ -139,6 +141,7 @@ export default function CustomerPage() {
   const [editingCustomer, setEditingCustomer] = useState(null); // null: Thêm mới, object: Sửa
 
   const api = useApi();
+  const { refreshKey, triggerRefresh } = useRefresh();
 
   // Sử dụng useMemo để debounce (trì hoãn) việc gọi API khi tìm kiếm
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
@@ -162,7 +165,7 @@ export default function CustomerPage() {
   // useEffect chính: Tự động gọi lại API khi trang hoặc từ khóa tìm kiếm thay đổi
   useEffect(() => {
     fetchCustomers(currentPage, debouncedSearchQuery);
-  }, [fetchCustomers, currentPage, debouncedSearchQuery]);
+  }, [fetchCustomers, currentPage, debouncedSearchQuery, refreshKey]);
 
   // --- Xử lý Modal ---
   const handleOpenCreate = () => {
@@ -188,17 +191,18 @@ export default function CustomerPage() {
       if (formData.customer_id) {
         // Cập nhật
         await updateCustomer(api, formData.customer_id, formData);
-        alert('Cập nhật khách hàng thành công!');
+        toast.success('Cập nhật khách hàng thành công!');
       } else {
         // Thêm mới
         await createCustomer(api, formData);
-        alert('Thêm khách hàng thành công!');
+        toast.success('Thêm khách hàng thành công!');
       }
       handleCloseModal();
       fetchCustomers(currentPage, debouncedSearchQuery); // Tải lại dữ liệu
+      triggerRefresh();
     } catch (err) {
       console.error(err);
-      alert(`Lỗi: ${err.response?.data?.message || err.message}`);
+      toast.error(`Lỗi: ${err.response?.data?.message || err.message}`);
     } finally {
       setModalLoading(false);
     }
@@ -208,12 +212,13 @@ export default function CustomerPage() {
     if (window.confirm('Bạn có chắc chắn muốn xoá khách hàng này?')) {
       try {
         await deleteCustomer(api, id);
-        alert('Xoá khách hàng thành công!');
+        toast.success('Xoá khách hàng thành công!');
         // Tải lại trang hiện tại (hoặc về trang 1 nếu trang hiện tại trống)
         fetchCustomers(currentPage, debouncedSearchQuery); 
+        triggerRefresh();
       } catch (err) {
         console.error(err);
-        alert(`Lỗi: ${err.response?.data?.message || err.message}`);
+        toast.error(`Lỗi: ${err.response?.data?.message || err.message}`);
       }
     }
   };

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { toast } from 'react-toastify';
 
 export default function ProductModal({
   open,
@@ -14,6 +15,7 @@ export default function ProductModal({
     minimum: "",
     product_status: "",
   });
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (initialData) {
@@ -72,23 +74,24 @@ export default function ProductModal({
     setForm((s) => ({ ...s, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading) return;
     if (!form.product_name.trim()) {
-      return alert("Tên sản phẩm là bắt buộc");
+      return toast.warn("Tên sản phẩm là bắt buộc");
     }
-
+    
     // kiểm tra số hợp lệ
     if (form.minimum !== "" && !/^\d+$/.test(form.minimum)) {
-      return alert("Tối thiểu phải là số nguyên không âm");
+      return toast.warn("Tối thiểu phải là số nguyên không âm");
     }
     if (form.import_price !== "" && isNaN(Number(form.import_price))) {
-      return alert("Giá nhập không hợp lệ");
+      return toast.warn("Giá nhập không hợp lệ");
     }
     if (form.export_price !== "" && isNaN(Number(form.export_price))) {
-      return alert("Giá xuất không hợp lệ");
+      return toast.warn("Giá xuất không hợp lệ");
     }
-
+    
     // convert numeric fields
     const payload = {
       ...form,
@@ -96,7 +99,15 @@ export default function ProductModal({
       export_price: form.export_price === "" ? null : Number(form.export_price),
       minimum: form.minimum === "" ? null : Number(form.minimum),
     };
-    onSave(payload);
+    setLoading(true);
+    try {
+      await Promise.resolve(onSave(payload));
+    } catch (error) {
+      const msg = error?.response?.data?.message || error?.message || "Lỗi khi lưu sản phẩm";
+      toast?.error?.(msg) ?? alert(msg);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -189,9 +200,10 @@ export default function ProductModal({
             </button>
             <button
               type="submit"
+              disabled={loading}
               className="px-4 py-2 bg-blue-600 text-white rounded"
             >
-              Lưu
+              {loading ? "Đang lưu..." : "Lưu"}
             </button>
           </div>
         </form>

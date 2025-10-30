@@ -3,6 +3,7 @@ import { createImportReceipt } from '../../services/importService';
 // (ĐÃ SỬA) Đổi 'createRestockLink' thành 'createLink'
 import { createLink } from '../../services/restockServices'; 
 import { getProducts } from '../../services/productServices';
+import { toast } from 'react-toastify';
 import { getSuppliers } from '../../services/supplierService';
 import { useApi } from '../../services/api';
 
@@ -119,12 +120,13 @@ export default function ImportModal({ open, onClose, onCreated, restockRequest }
         note: `Linked to receipt #${newReceiptId}`
       });
       
-      alert(receiptRes.message || "Tạo phiếu nhập thành công!");
+      toast.success(receiptRes.message || "Tạo phiếu nhập thành công!");
       onCreated && onCreated(); 
       onClose(); 
     } catch (e) {
       console.error(e);
       setError(e?.response?.data?.message || e?.message || 'Lỗi khi tạo phiếu nhập');
+      toast.error(error);
     } finally {
       setLoading(false);
     }

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { toast } from 'react-toastify';
 import { useAuth } from "../context/AuthContext";
 import ProductModal from "../components/modals/ProductModal";
 import {
@@ -7,10 +8,12 @@ import {
   updateProduct,
 } from "../services/productServices";
 import { useApi } from "../services/api";
+import { useRefresh } from "../context/RefreshContext";
 
 const ProductPage = () => {
   const { token } = useAuth(); // not used directly, ensures context present
   const api = useApi(); // axios instance with Authorization header
+  const { refreshKey, triggerRefresh } = useRefresh();
   const [products, setProducts] = useState([]);
   const [search, setSearch] = useState("");
   const [unitFilter, setUnitFilter] = useState("");
@@ -36,7 +39,7 @@ const ProductPage = () => {
   useEffect(() => {
     if (token) fetchProducts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+  }, [token, refreshKey]);
 
   const units = useMemo(() => {
     const s = new Set(products.map((p) => p.unit).filter(Boolean));
@@ -83,10 +86,11 @@ const ProductPage = () => {
         await createProduct(api, data);
       }
       await fetchProducts();
+      triggerRefresh();
       closeModal();
     } catch (err) {
       console.error("Save product error", err);
-      alert(
+      toast.error(
         err.response?.data?.message || err.message || "Lỗi khi lưu sản phẩm"
       );
     }

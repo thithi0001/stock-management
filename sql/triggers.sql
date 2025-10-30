@@ -69,16 +69,16 @@ BEGIN
 END//
 DELIMITER ;
 
-DELIMITER //
-CREATE TRIGGER tr_handle_insert_link
-AFTER INSERT ON restock_import_links
-FOR EACH ROW
-BEGIN
-	UPDATE restock_import_links
-    SET link_status = 'replaced'
-    WHERE (restock_request_id = NEW.restock_request_id) AND NOT (import_receipt_id != NEW.import_receipt_id);
-END//
-DELIMITER ;
+-- DELIMITER //
+-- CREATE TRIGGER tr_handle_insert_link
+-- BEFORE INSERT ON restock_import_links
+-- FOR EACH ROW
+-- BEGIN
+-- 	UPDATE restock_import_links
+--     SET link_status = 'replaced'
+--     WHERE (restock_request_id = NEW.restock_request_id) AND NOT (import_receipt_id != NEW.import_receipt_id);
+-- END//
+-- DELIMITER ;
 
 SELECT TRIGGER_NAME, EVENT_MANIPULATION, EVENT_OBJECT_TABLE, ACTION_STATEMENT 
 FROM INFORMATION_SCHEMA.TRIGGERS 

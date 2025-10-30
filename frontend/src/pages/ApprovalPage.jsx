@@ -1,18 +1,29 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { 
-  getExportReceiptsByStatus, 
-  getExportReceiptDetails, 
-  approveExport 
-} from '../services/approvalService';
-import {useApi} from '../services/api';
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  getExportReceiptsByStatus,
+  getExportReceiptDetails,
+  approveExport,
+} from "../services/approvalService";
+import { useApi } from "../services/api";
+import { toast } from "react-toastify";
+import { useRefresh } from "../context/RefreshContext";
 
 // --- Helper Functions (Giữ nguyên) ---
 const formatCurrency = (value) => {
-  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+  }).format(value);
 };
 const formatDate = (dateString) => {
-  const options = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' };
-  return new Date(dateString).toLocaleString('vi-VN', options);
+  const options = {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  };
+  return new Date(dateString).toLocaleString("vi-VN", options);
 };
 const STATUS_CONFIG = {
   pending: { text: "Chờ duyệt", className: "bg-yellow-100 text-yellow-800" },
@@ -44,17 +55,18 @@ function ApprovalPage() {
 
   const [selectedReceipt, setSelectedReceipt] = useState(null);
   const [detailData, setDetailData] = useState(null);
-  
+
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);
-  
-  const [actionType, setActionType] = useState('approved');
-  const [reason, setReason] = useState('');
-  
+
+  const [actionType, setActionType] = useState("approved");
+  const [reason, setReason] = useState("");
+
   const [actionLoading, setActionLoading] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
 
   const api = useApi();
+  const { refreshKey, triggerRefresh } = useRefresh();
 
   // Hàm gọi API fetch theo status (Giữ nguyên)
   const fetchReceipts = useCallback(async (status) => {
@@ -74,7 +86,7 @@ function ApprovalPage() {
   // useEffect gọi fetch khi status thay đổi (Giữ nguyên)
   useEffect(() => {
     fetchReceipts(currentStatus);
-  }, [currentStatus, fetchReceipts]);
+  }, [currentStatus, fetchReceipts, refreshKey]);
 
   // Các hàm xử lý modal (Giữ nguyên)
   const handleViewDetails = async (receipt) => {
@@ -97,17 +109,19 @@ function ApprovalPage() {
     setSelectedReceipt(receipt);
     setActionType(type);
     setIsActionModalOpen(true);
-    setReason('');
+    setReason("");
   };
+
   const handleCloseModals = () => {
     setIsDetailModalOpen(false);
     setIsActionModalOpen(false);
-    setDetailData(null); 
-  }
+    setDetailData(null); // Xóa data cũ
+  };
+
   const handleConfirmAction = async (e) => {
     e.preventDefault();
-    if (actionType === 'rejected' && !reason.trim()) {
-      alert('Vui lòng nhập lý do từ chối.');
+    if (actionType === "rejected" && !reason.trim()) {
+      toast.warn("Vui lòng nhập lý do từ chối.");
       return;
     }
     setActionLoading(true);
@@ -115,12 +129,19 @@ function ApprovalPage() {
     // Lấy ID chính xác
     const receiptId = selectedReceipt.receipt_id || selectedReceipt.export_receipt_id;
     try {
-      const result = await approveExport(api, receiptId, actionType, reason);
-      alert(result.message || 'Thao tác thành công!');
+      const result = await approveExport(
+        api,
+        selectedReceipt.receipt_id,
+        actionType,
+        reason
+      );
+
+      toast.success(result.message || "Thao tác thành công!");
       handleCloseModals();
       fetchReceipts(currentStatus);
+      triggerRefresh();
     } catch (err) {
-      alert(`Lỗi: ${err.response?.data?.message || err.message}`);
+      toast.error(`Lỗi: ${err.response?.data?.message || err.message}`);
     } finally {
       setActionLoading(false);
     }
@@ -130,13 +151,14 @@ function ApprovalPage() {
 
   const renderTabs = () => (
     <div className="flex border-b border-gray-200 mb-6">
-      {TABS.map(tab => (
+      {TABS.map((tab) => (
         <button
           key={tab.key}
           className={`py-3 px-5 text-gray-600 font-medium cursor-pointer border-b-2 transition duration-150 ease-in-out
-            ${currentStatus === tab.key 
-              ? 'text-blue-600 border-blue-600' 
-              : 'border-transparent hover:bg-gray-100 hover:text-gray-800'
+            ${
+              currentStatus === tab.key
+                ? "text-blue-600 border-blue-600"
+                : "border-transparent hover:bg-gray-100 hover:text-gray-800"
             }`}
           onClick={() => setCurrentStatus(tab.key)}
         >
@@ -217,7 +239,9 @@ function ApprovalPage() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium text-right">{formatCurrency(receipt.total_amount)}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{formatDate(date)}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`py-1 px-3 rounded-full text-xs font-semibold inline-block ${statusInfo.className}`}>
+                    <span
+                      className={`py-1 px-3 rounded-full text-xs font-semibold inline-block ${statusInfo.className}`}
+                    >
                       {statusInfo.text}
                     </span>
                   </td>
@@ -225,8 +249,22 @@ function ApprovalPage() {
                     <button className={btnView} onClick={() => handleViewDetails(receipt)}>Xem</button>
                     {status === 'pending' && (
                       <>
-                        <button className={btnApprove} onClick={() => handleOpenActionModal(receipt, 'approved')}>Duyệt</button>
-                        <button className={btnReject} onClick={() => handleOpenActionModal(receipt, 'rejected')}>Từ chối</button>
+                        <button
+                          className={btnApprove}
+                          onClick={() =>
+                            handleOpenActionModal(receipt, "approved")
+                          }
+                        >
+                          Duyệt
+                        </button>
+                        <button
+                          className={btnReject}
+                          onClick={() =>
+                            handleOpenActionModal(receipt, "rejected")
+                          }
+                        >
+                          Từ chối
+                        </button>
                       </>
                     )}
                   </td>
@@ -256,9 +294,13 @@ function ApprovalPage() {
           </div>
           <div className="p-6 max-h-[70vh] overflow-y-auto">
             {detailLoading ? (
-              <div className="p-10 text-center text-lg text-gray-500">Đang tải chi tiết...</div>
+              <div className="p-10 text-center text-lg text-gray-500">
+                Đang tải chi tiết...
+              </div>
             ) : error ? (
-              <div className="p-4 text-center text-red-700 bg-red-100 border border-red-300 rounded-md">Lỗi: {error}</div>
+              <div className="p-4 text-center text-red-700 bg-red-100 border border-red-300 rounded-md">
+                Lỗi: {error}
+              </div>
             ) : detailData ? (
               <>
                  {/* Hiển thị lý do từ chối nếu có */}
@@ -326,16 +368,32 @@ function ApprovalPage() {
     const receiptId = selectedReceipt.receipt_id || selectedReceipt.export_receipt_id;
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-        <form onSubmit={handleConfirmAction} className="bg-white rounded-lg shadow-xl w-full max-w-lg">
+        <form
+          onSubmit={handleConfirmAction}
+          className="bg-white rounded-lg shadow-xl w-full max-w-lg"
+        >
           <div className="flex justify-between items-center p-5 border-b border-gray-200">
-            <h2 className="text-xl font-semibold">Xác nhận {isReject ? 'Từ chối' : 'Duyệt'} Phiếu</h2>
-            <button type="button" onClick={handleCloseModals} className="text-gray-400 hover:text-gray-600 text-2xl font-light">&times;</button>
+            <h2 className="text-xl font-semibold">
+              Xác nhận {isReject ? "Từ chối" : "Duyệt"} Phiếu
+            </h2>
+            <button
+              type="button"
+              onClick={handleCloseModals}
+              className="text-gray-400 hover:text-gray-600 text-2xl font-light"
+            >
+              &times;
+            </button>
           </div>
           <div className="p-6">
             <p className="text-base text-gray-700">Bạn có chắc muốn <strong>{isReject ? 'TỪ CHỐI' : 'DUYỆT'}</strong> phiếu xuất <strong>#{receiptId}</strong> không?</p>
             {isReject && (
               <div className="mt-4">
-                <label htmlFor="reason" className="block text-sm font-medium text-gray-700 mb-2">Lý do từ chối (bắt buộc):</label>
+                <label
+                  htmlFor="reason"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Lý do từ chối (bắt buộc):
+                </label>
                 <textarea
                   id="reason"
                   value={reason}
@@ -349,9 +407,22 @@ function ApprovalPage() {
             )}
           </div>
           <div className="flex justify-end gap-3 p-5 border-t border-gray-200">
-            <button type="button" className={btnSecondary} onClick={handleCloseModals} disabled={actionLoading}>Hủy bỏ</button>
-            <button type="submit" className={isReject ? btnReject : btnApprove} disabled={actionLoading}>
-              {actionLoading ? 'Đang xử lý...' : `Xác nhận ${isReject ? 'Từ chối' : 'Duyệt'}`}
+            <button
+              type="button"
+              className={btnSecondary}
+              onClick={handleCloseModals}
+              disabled={actionLoading}
+            >
+              Hủy bỏ
+            </button>
+            <button
+              type="submit"
+              className={isReject ? btnReject : btnApprove}
+              disabled={actionLoading}
+            >
+              {actionLoading
+                ? "Đang xử lý..."
+                : `Xác nhận ${isReject ? "Từ chối" : "Duyệt"}`}
             </button>
           </div>
         </form>
@@ -362,7 +433,9 @@ function ApprovalPage() {
   // --- Main Render ---
   return (
     <div className="p-6 min-h-screen">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800">Quản lý Duyệt Phiếu Xuất</h1>
+      <h1 className="text-3xl font-bold mb-6 text-gray-800">
+        Quản lý Duyệt Phiếu Xuất
+      </h1>
       {renderTabs()}
       
       {/* (MỚI) Thêm thanh tìm kiếm */}

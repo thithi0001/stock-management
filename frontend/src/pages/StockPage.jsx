@@ -3,10 +3,13 @@ import { useAuth } from "../context/AuthContext";
 import StockModal from "../components/modals/StockModal";
 import { getStocks, updateStock } from "../services/stockServices";
 import { useApi } from "../services/api";
+import { toast } from "react-toastify";
+import { useRefresh } from "../context/RefreshContext";
 
 const StockPage = () => {
   const { token } = useAuth();
   const api = useApi();
+  const { refreshKey, triggerRefresh } = useRefresh();
   const [stocks, setStocks] = useState([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
@@ -30,7 +33,7 @@ const StockPage = () => {
   useEffect(() => {
     if (token) fetchStocks();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+  }, [token, refreshKey]);
 
   const statusOptions = useMemo(() => {
     const s = new Set(stocks.map((s) => s.stock_status).filter(Boolean));
@@ -60,10 +63,11 @@ const StockPage = () => {
         await updateStock(api, editing.stock_id, data);
       }
       await fetchStocks();
+      triggerRefresh();
       closeModal();
     } catch (err) {
       console.error("Save stock error", err);
-      alert(
+      toast.warn(
         err.response?.data?.message || err.message || "Lỗi khi cập nhật tồn kho"
       );
     }

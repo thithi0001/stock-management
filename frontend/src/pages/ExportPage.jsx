@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import ExportModal from '../components/modals/ExportModal';
 import { fetchExportReceipts, fetchExportById } from '../services/exportService';
 import { useApi } from '../services/api';
+import { useRefresh } from '../context/RefreshContext';
 
 // --- Helpers (Giữ nguyên) ---
 const formatCurrency = (value) => {
@@ -41,6 +42,7 @@ export default function ExportPage() {
   const [detailLoading, setDetailLoading] = useState(false);
 
   const api = useApi();
+  const { refreshKey, triggerRefresh } = useRefresh();
 
   // (CẬP NHẬT) Hàm load giờ nhận status từ state 'exportStatusFilter'
   const load = useCallback(async (status) => {
@@ -61,7 +63,7 @@ export default function ExportPage() {
   // (CẬP NHẬT) useEffect gọi load khi status filter thay đổi
   useEffect(() => {
     load(exportStatusFilter);
-  }, [load, exportStatusFilter]);
+  }, [load, exportStatusFilter, refreshKey]);
 
   // Hàm onCreated chỉ cần tải lại status hiện tại
   const handleCreated = () => {

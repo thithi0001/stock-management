@@ -1,0 +1,202 @@
+KHUNG BÁO CÁO - HỆ THỐNG QUẢN LÝ KHO HÀNG
+====================================================
+
+I. GIỚI THIỆU ĐỀ TÀI
+1. Mục đích
+Ứng dụng giúp doanh nghiệp quản lý toàn bộ hoạt động nhập, xuất và kiểm kê hàng hóa một cách tự động, giảm sai sót và tiết kiệm thời gian.
+
+2. Mục tiêu
+- Quản lý thông tin sản phẩm, nhà cung cấp, khách hàng.
+- Ghi nhận và phê duyệt phiếu nhập – xuất hàng.
+- Theo dõi số lượng tồn kho theo thời gian thực.
+- Cảnh báo hàng sắp hết, tự động tạo yêu cầu nhập hàng mới.
+- Tạo báo cáo tháng cho các hoạt động nhập – xuất – tồn.
+
+3. Phương pháp tiến hành
+a) Khảo sát mô hình quản lý kho thủ công hiện nay.
+b) Phân tích nghiệp vụ và các quy trình thực tế tại kho.
+c) Ứng dụng công nghệ NodeJS + ExpressJS + React + MySQL + Prisma để xây dựng PM.
+d) Thực hiện qua các bước: Phân tích → Thiết kế → Hiện thực → Kiểm thử → Đánh giá.
+
+----------------------------------------------------
+
+II. CƠ SỞ KHOA HỌC CỦA ĐỀ TÀI
+- Quy trình nghiệp vụ: hoạt động nhập hàng, xuất hàng, kiểm kê, báo cáo.
+- Công nghệ sử dụng:
+  + Backend: NodeJS + ExpressJS (RESTful API, kiến trúc 3-layer).
+  + ORM: Prisma (kết nối và truy vấn MySQL).
+  + Frontend: ReactJS (SPA, component-based UI).
+  + Database: MySQL (lưu trữ dữ liệu, trigger và ràng buộc toàn vẹn).
+- Ưu điểm:
+  + Dễ mở rộng theo mô hình microservice.
+  + Dữ liệu được ánh xạ chặt chẽ qua Prisma Schema.
+  + Giao diện thân thiện, thời gian phản hồi nhanh.
+
+----------------------------------------------------
+
+III. PHÂN TÍCH HỆ THỐNG
+
+1. Hiện trạng phát sinh nhu cầu
+Mô hình vận hành cũ (thủ công): Các phiếu nhập – xuất được ghi trên giấy, cập nhật sổ sách bằng tay, khó đối chiếu số lượng thực tế.
+- Khó phát hiện sai lệch tồn kho.
+- Chậm trễ trong lập báo cáo, thống kê.
+- Không dự đoán được sản phẩm bán chạy.
+
+Lược đồ cộng tác (PlantUML):
+@startuml
+actor "Thủ kho" as Keeper
+actor "Nhân viên mua hàng" as Buyer
+actor "Nhân viên bán hàng" as Seller
+Keeper -> Buyer: Gửi danh sách hàng thiếu
+Buyer -> Supplier: Liên hệ nhập hàng
+Seller -> Keeper: Yêu cầu xuất hàng
+Keeper -> Record: Cập nhật sổ giấy
+@enduml
+
+Ưu điểm: dễ triển khai, không cần công nghệ.
+Khuyết điểm: sai sót cao, không có thống kê tự động.
+
+----------------------------------------------------
+
+2. Mô hình vận hành mới (có PM)
+Lợi ích:
+- Tự động cập nhật tồn kho sau mỗi phiếu nhập/xuất.
+- Cảnh báo hàng sắp hết để tạo restock request.
+- Báo cáo tháng tự động tổng hợp.
+
+Use Cases chính:
+1. Nhập sản phẩm vào kho
+2. Xuất sản phẩm khỏi kho
+3. Kiểm tra tồn kho
+
+Lược đồ usecase (PlantUML):
+@startuml
+actor "Thủ kho"
+actor "Nhân viên mua hàng"
+actor "Nhân viên bán hàng"
+actor "Quản lý"
+
+usecase "Nhập sản phẩm" as UC1
+usecase "Xuất sản phẩm" as UC2
+usecase "Kiểm tra tồn kho" as UC3
+usecase "Tạo báo cáo tháng" as UC4
+
+"Thủ kho" --> UC1
+"Nhân viên mua hàng" --> UC1
+"Thủ kho" --> UC2
+"Nhân viên bán hàng" --> UC2
+"Quản lý" --> UC3
+"Quản lý" --> UC4
+@enduml
+
+----------------------------------------------------
+
+IV. PHÂN TÍCH YÊU CẦU
+
+1. Xác định các đối tượng thành phần (CRC)
+| Lớp/Đối tượng | Trách nhiệm | Cộng tác với |
+|----------------|--------------|---------------|
+| Product | Lưu thông tin sản phẩm | Stock, ImportDetail, ExportDetail |
+| Stock | Quản lý tồn kho | Product, ImportReceipt, ExportReceipt |
+| ImportReceipt | Ghi nhận nhập hàng | Supplier, Stock |
+| ExportReceipt | Ghi nhận xuất hàng | Customer, Stock |
+| UserAccount | Quản lý người dùng | Role |
+| MonthlyReport | Tổng hợp báo cáo | ImportReceipt, ExportReceipt |
+
+Lược đồ lớp (textUML):
+class Product {
+  +product_id: int
+  +product_name: string
+  +unit: string
+  +import_price: decimal
+  +export_price: decimal
+  +minimum: int
+  +product_status: enum
+}
+
+class Stock {
+  +stock_id: int
+  +quantity: int
+  +last_updated_at: datetime
+  +warning: bit
+  +updateQuantity()
+}
+
+class ImportReceipt {
+  +receipt_id: int
+  +total_amount: decimal
+  +createReceipt()
+  +approveReceipt()
+}
+Product "1" -- "many" Stock
+ImportReceipt "1" -- "many" Product
+
+----------------------------------------------------
+
+V. THIẾT KẾ HỆ THỐNG
+
+1. Phân tầng kiến trúc
+- Giao diện (ReactJS): Form nhập, xuất, kiểm tra tồn kho.
+- Xử lý (ExpressJS): API /api/imports, /api/exports, /api/stocks.
+- Dữ liệu (MySQL + Prisma): ánh xạ bảng products, stocks, import_receipts, ...
+
+2. Liên kết mô-đun
+| Layer | Thành phần chính | Mô tả |
+|--------|------------------|-------|
+| Presentation | React Components | Form nhập/xuất hàng |
+| Application | API Controller | Gọi service xử lý yêu cầu |
+| Service | Business Logic | Tính toán, xác thực dữ liệu |
+| Data | Prisma Model | CRUD dữ liệu thực tế |
+
+----------------------------------------------------
+
+VI. QUY TRÌNH NGHIỆP VỤ MẪU
+
+Use case: Nhập sản phẩm
+@startuml
+actor "Thủ kho"
+participant "WebApp"
+participant "API Server"
+participant "Database"
+
+"Thủ kho" -> "WebApp": Gửi phiếu nhập
+"WebApp" -> "API Server": POST /api/imports
+"API Server" -> "Database": INSERT import_receipts + import_details
+"Database" --> "API Server": OK
+"API Server" --> "WebApp": Cập nhật thành công
+"WebApp" --> "Thủ kho": Hiển thị thông báo
+@enduml
+
+----------------------------------------------------
+
+VII. HIỆN THỰC
+- Công nghệ: NodeJS 22, React 18, Prisma ORM, MySQL 8.
+- Cấu trúc thư mục:
+backend/
+  routes/
+  controllers/
+  services/
+  prisma/schema.prisma
+frontend/
+  src/pages/
+  src/services/api.js
+  src/components/
+
+- Chức năng demo:
+  + Nhập hàng → Cập nhật stock.
+  + Xuất hàng → Tự động trừ stock, tạo báo cáo tháng.
+  + Kiểm tra tồn kho → Giao diện hiển thị, có cảnh báo màu.
+
+----------------------------------------------------
+
+VIII. ĐÁNH GIÁ
+- Ưu điểm: Tự động, dễ mở rộng, dữ liệu chính xác, dễ giám sát.
+- Hạn chế: Chưa tích hợp AI dự đoán hàng bán chạy, cần bảo mật nâng cao.
+- Hướng phát triển: Tích hợp phân tích dữ liệu và biểu đồ thống kê theo tháng.
+
+----------------------------------------------------
+
+IX. TÀI LIỆU THAM KHẢO
+- Viet bao cao xay dung ung dung-2025-v2.pdf
+- quan_ly_kho_db.sql
+- Prisma Docs, ExpressJS Guide, ReactJS Official Docs.
