@@ -1,13 +1,31 @@
 import { prisma } from "../config/db.js";
 
+/**
+ * (ĐÃ SỬA)
+ * Lấy chi tiết 1 phiếu xuất theo ID (bao gồm chi tiết sản phẩm và thông tin duyệt)
+ */
 export async function getAllExportReceiptsById(receipt_id){
     return await prisma.export_receipts.findUnique({
         where:{receipt_id},
         include:{
-            customers: true,
-            user_accounts: true,
-            export_details:{
-                include: {products: true}
+            customers: true,      // Thông tin khách hàng
+            user_accounts: true,  // Người tạo phiếu
+            export_details:{      // Chi tiết các sản phẩm
+                include: { products: true } // Thông tin sản phẩm
+            },
+            // (ĐÃ THÊM) Include và Select thông tin duyệt
+            approval_exports: {
+                select: {
+                    approval_id: true,
+                    approved_at: true,
+                    new_status: true,
+                    reason: true,        // <-- Lấy lý do từ chối
+                    user_accounts: {     // <-- Lấy thông tin người duyệt
+                        select: {
+                            full_name: true // Chỉ lấy tên
+                        }
+                    }
+                }
             }
         }
     });
@@ -37,7 +55,7 @@ export async function createExportReceiptWithDetails(data){
         // 2. Chuẩn bị dữ liệu chi tiết (thêm receipt_id vào từng sản phẩm)
         const preparedDetails = details.map(d => ({
             ...d, // Gồm: product_id, quantity, unit_price, total_amount
-            receipt_id: receipt_id 
+            receipt_id: receipt_id
         }));
 
         // 3. Thêm tất cả chi tiết sản phẩm bằng `createMany` (nhanh và an toàn)
@@ -56,7 +74,7 @@ export async function createExportReceiptWithDetails(data){
  * Đáp ứng yêu cầu "hiển thị danh sách" và "lọc theo trạng thái"
  */
 export async function getAllExportReceipts(status){
-    
+
     // Xây dựng mệnh đề 'where'
     const whereClause = {};
     if(status && status !== 'all'){

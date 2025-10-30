@@ -9,6 +9,7 @@ import productRoutes from './routes/productRoutes.js';
 import stockRoutes from './routes/stockRoutes.js';
 import restockRoutes from './routes/restockRoutes.js';
 import importRoutes from './routes/importRoutes.js';
+import approvalImportRoutes from './routes/approvalImportRoutes.js';
 import exportRoutes from './routes/exportRoutes.js';
 import approvalExportRoutes from './routes/approvalExportRoutes.js';
 import customerRoutes from './routes/customerRoutes.js';
@@ -34,6 +35,9 @@ app.use('/api/restocks', restockRoutes);
 
 //Nhap hang
 app.use('/api/import', importRoutes);
+
+// Duyet nhap hang
+app.use('/api/approval-import', approvalImportRoutes);
 
 // Khach hang
 app.use('/api/customers', customerRoutes);

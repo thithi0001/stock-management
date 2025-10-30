@@ -1,36 +1,35 @@
 import React, { useEffect, useState } from 'react';
 import { createImportReceipt } from '../../services/importService';
-import { useApi } from '../../services/api';
-import { getSuppliers } from '../../services/supplierService';
+// (ĐÃ SỬA) Đổi 'createRestockLink' thành 'createLink'
+import { createLink } from '../../services/restockServices'; 
 import { getProducts } from '../../services/productServices';
 import { toast } from 'react-toastify';
+import { getSuppliers } from '../../services/supplierService';
+import { useApi } from '../../services/api';
 
 // --- Helpers ---
 const formatCurrency = (value) => {
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
 };
-
-// Helper này đã được cập nhật để xử lý cả mảng (products) và object có phân trang (suppliers)
 const normalizeResponse = (res) => {
   if (!res) return [];
-  if (Array.isArray(res)) return res; // Dùng cho getProducts
-  if (res.data && Array.isArray(res.data)) return res.data; 
-  if (res.data && res.data.data && Array.isArray(res.data.data)) return res.data.data; // Dùng cho getSuppliers
+  if (Array.isArray(res)) return res;
+  if (res.data && Array.isArray(res.data)) return res.data;
+  if (res.data && res.data.data && Array.isArray(res.data.data)) return res.data.data;
   return [];
 };
 
-// --- Component Modal Tạo Phiếu Nhập ---
-export default function ImportModal({ open, onClose, onCreated }) {
+export default function ImportModal({ open, onClose, onCreated, restockRequest }) {
   const [suppliers, setSuppliers] = useState([]);
   const [products, setProducts] = useState([]);
   const [supplierId, setSupplierId] = useState('');
-  const [lines, setLines] = useState([{ product_id: '', quantity: 1, unit_price: 0 }]);
+  const [lines, setLines] = useState([]); // Bắt đầu rỗng
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const api = useApi();
 
-  // Load Nhà cung cấp và Sản phẩm khi modal mở
+  // Load NCC và Sản phẩm
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
@@ -39,12 +38,10 @@ export default function ImportModal({ open, onClose, onCreated }) {
       try {
         setLoading(true);
         const [supplierRes, productRes] = await Promise.all([
-          getSuppliers(api), // service trả về { data: { data: [...] } }
-          getProducts(api)   // service trả về [...]
+          getSuppliers(api),
+          getProducts(api)
         ]);
         if (cancelled) return;
-        
-        // Dùng normalizeResponse cho cả hai
         setSuppliers(normalizeResponse(supplierRes)); 
         setProducts(normalizeResponse(productRes));
       } catch (err) {
@@ -59,36 +56,36 @@ export default function ImportModal({ open, onClose, onCreated }) {
     return () => { cancelled = true; };
   }, [open, api]);
 
-  // --- Quản lý Dòng sản phẩm ---
-  const addLine = () => setLines([...lines, { product_id: '', quantity: 1, unit_price: 0 }]);
-  const removeLine = (i) => setLines(lines.filter((_, idx) => idx !== i));
-
-  const updateLine = (i, patch) => {
-    setLines(lines.map((l, idx) => {
-      if (idx !== i) return l;
-      
-      const updatedLine = { ...l, ...patch };
-      
-      // Tự động điền giá nhập khi chọn sản phẩm
-      if (patch.product_id) {
-        const selected = products.find(p => Number(p.product_id) === Number(patch.product_id));
-        if (selected) {
-          // QUAN TRỌNG: Dùng giá NHẬP (import_price)
-          updatedLine.unit_price = selected.import_price ?? 0;
+  // (CẬP NHẬT) Tự động điền sản phẩm từ Yêu cầu (Restock Request)
+  useEffect(() => {
+    if (restockRequest && products.length > 0) {
+      const product = products.find(p => p.product_id === restockRequest.product_id);
+      setLines([
+        {
+          product_id: restockRequest.product_id,
+          product_name: product?.product_name || 'N/A', // Hiển thị tên
+          quantity: restockRequest.requested_quantity || 1,
+          unit_price: product?.import_price || 0, // Tự điền giá nhập
         }
-      }
-      return updatedLine;
-    }));
+      ]);
+    } else {
+      setLines([]); // Reset nếu không có request
+    }
+  }, [restockRequest, products]);
+
+  // (CẬP NHẬT) Chỉ cho phép sửa số lượng và giá
+  const updateLine = (i, patch) => {
+    setLines(lines.map((l, idx) => (idx === i ? { ...l, ...patch } : l)));
   };
 
   const computeLineTotal = (l) => (Number(l.quantity || 0) * Number(l.unit_price || 0));
   const computeTotal = () => lines.reduce((sum, l) => sum + computeLineTotal(l), 0);
 
-  // --- Xử lý Submit ---
+  // (CẬP NHẬT) handleSubmit giờ sẽ tạo phiếu VÀ tạo link
   const handleSubmit = async () => {
     setError('');
     if (!supplierId) return setError('⚠️ Vui lòng chọn nhà cung cấp');
-    if (!lines.every(l => l.product_id && l.quantity > 0)) return setError('⚠️ Điền đầy đủ thông tin sản phẩm');
+    if (!lines.every(l => l.product_id && l.quantity > 0)) return setError('⚠️ Sản phẩm không hợp lệ');
     if (!window.confirm('Xác nhận tạo phiếu nhập này?')) return;
 
     setLoading(true);
@@ -105,10 +102,23 @@ export default function ImportModal({ open, onClose, onCreated }) {
       const finalPayload = {
         supplier_id: Number(supplierId),
         total_amount: total_amount,
-        details: payloadDetails 
+        details: payloadDetails
       };
 
-      const res = await createImportReceipt(api, finalPayload);
+      // 1. Tạo Phiếu Nhập
+      const receiptRes = await createImportReceipt(api, finalPayload);
+      const newReceiptId = receiptRes?.receipt?.receipt_id;
+
+      if (!newReceiptId) {
+        throw new Error("Không nhận được ID phiếu nhập sau khi tạo.");
+      }
+
+      // 2. (ĐÃ SỬA) Đổi tên hàm
+      await createLink(api, {
+        restock_request_id: restockRequest.request_id,
+        import_receipt_id: newReceiptId,
+        note: `Linked to receipt #${newReceiptId}`
+      });
       
       toast.success(res?.message || "Tạo phiếu nhập thành công!");
       onCreated && onCreated(); 
@@ -124,11 +134,13 @@ export default function ImportModal({ open, onClose, onCreated }) {
   
   if (!open) return null;
 
-  // --- JSX ---
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="bg-white rounded-lg p-6 w-full max-w-4xl shadow-lg max-h-[90vh] flex flex-col">
         <h3 className="text-xl font-semibold mb-4">🧾 Tạo phiếu nhập kho</h3>
+        <p className="text-sm text-gray-600 mb-2">
+          Từ Yêu cầu: <span className="font-medium">#{restockRequest.request_id}</span>
+        </p>
 
         {error && <div className="text-red-600 mb-2 p-3 bg-red-50 border border-red-200 rounded">{error}</div>}
 
@@ -150,7 +162,7 @@ export default function ImportModal({ open, onClose, onCreated }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Danh sách sản phẩm</label>
+            <label className="block text-sm font-medium mb-2">Danh sách sản phẩm (Từ yêu cầu)</label>
             <div className="overflow-x-auto border rounded-lg">
               <table className="w-full text-sm">
                 <thead className="bg-gray-100">
@@ -159,25 +171,19 @@ export default function ImportModal({ open, onClose, onCreated }) {
                     <th className="p-2 text-center w-1/6">Số lượng</th>
                     <th className="p-2 text-center w-1/6">Đơn giá (nhập)</th>
                     <th className="p-2 text-center w-1/6">Thành tiền</th>
-                    <th className="p-2 w-10"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {lines.map((l, i) => (
                     <tr key={i}>
                       <td className="p-2">
-                        <select
-                          className="border p-1 rounded w-full"
-                          value={l.product_id}
-                          onChange={(e) => updateLine(i, { product_id: e.target.value })}
-                        >
-                          <option value="">-- Chọn sản phẩm --</option>
-                          {products.map(p => (
-                              <option key={p.product_id} value={p.product_id}>
-                                  {`${p.product_name} — [${p.unit ?? 'đv'}]`}
-                              </option>
-                          ))}
-                        </select>
+                        {/* (CẬP NHẬT) Không cho sửa sản phẩm, chỉ hiển thị */}
+                        <input 
+                          type="text" 
+                          value={l.product_name}
+                          readOnly
+                          className="border-0 bg-gray-100 p-1 rounded w-full"
+                        />
                       </td>
                       <td className="p-2 text-center">
                         <input
@@ -199,27 +205,12 @@ export default function ImportModal({ open, onClose, onCreated }) {
                         />
                       </td>
                       <td className="p-2 text-right font-medium">{formatCurrency(computeLineTotal(l))}</td>
-                      <td className="p-2 text-center">
-                        <button
-                          onClick={() => removeLine(i)}
-                          disabled={lines.length === 1}
-                          className="text-red-500 font-bold hover:text-red-700 disabled:opacity-30"
-                        >
-                          ✕
-                        </button>
-                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-
-            <button
-              onClick={addLine}
-              className="mt-2 text-blue-600 text-sm font-medium hover:text-blue-800"
-            >
-              + Thêm sản phẩm
-            </button>
+            {/* Không cần nút "+ Thêm sản phẩm" vì phiếu nhập chỉ dựa trên 1 yêu cầu */}
           </div>
         </div>
 
