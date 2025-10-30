@@ -1,8 +1,12 @@
 import { 
     findAllUsers, 
     findUserByUsername, 
-    findUsersByRole
+    findUsersByRole,
+    updateAccountStatus,
+    updatePassword,
+    updateUserInfor
 } from "../models/userModel.js";
+import bcrypt from "bcryptjs";
 
 export const getAllUsers = async (req, res) => {
     try {
@@ -46,19 +50,52 @@ export const addUser = async (req, res) => {
     }
 }
 
-export const changePassword = async (req, res) => {
+export const editUserInfor = async (req, res) => {
     try {
-        
+        const newUser = await updateUserInfor(req.params.username, req.body);
+        return res.json(newUser);
     } catch (error) {
-        
+        console.error(error);
+        return res.status(500).json({ message: 'Failed to update user infor' });
     }
+}
+
+export async function changePassword(req, res) {
+  try {
+    const username = req.params.username;
+    const { oldPassword, newPassword } = req.body;
+
+    if (!username || !oldPassword || !newPassword)
+      return res.status(400).json({ message: "Missing fields" });
+
+    // Lấy user hiện tại
+    const user = await findUserByUsername(username);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Kiểm tra mật khẩu cũ
+    const valid = await bcrypt.compare(oldPassword, user.user_password);
+    if (!valid) return res.status(401).json({ message: "Old password incorrect" });
+
+    // Hash mật khẩu mới
+    const hashed = await bcrypt.hash(newPassword, 10);
+
+    // Cập nhật mật khẩu mới
+    await updatePassword(username, hashed);
+
+    return res.json({ message: "Password updated successfully" });
+  } catch (error) {
+    console.error("Error changing password:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
 }
 
 export const changeAccountStatus = async (req, res) => {
     try {
-        
+        const newUser = await updateAccountStatus(req.params.username, req.body);
+        return res.json(newUser);
     } catch (error) {
-        
+        console.error(error);
+        return res.status(500).json({ message: 'Failed to update user infor' });
     }
 }
 

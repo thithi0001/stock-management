@@ -45,7 +45,26 @@ export const useApi = () => {
 
     const onResponseError = (error) => {
       const status = error.response?.status;
-      if (status === 401) {
+      const requestUrl = error.config?.url ?? "";
+
+      // lấy pathname từ requestUrl (hỗ trợ cả relative và absolute)
+      let path = requestUrl;
+      try {
+        path = new URL(requestUrl).pathname;
+      } catch {
+        try {
+          path = new URL(requestUrl, API_BASE_URL).pathname;
+        } catch {
+          path = requestUrl;
+        }
+      }
+
+      const ignore401Patterns = [
+        /\/api\/profile\/[^/]+\/change-password\b/,
+      ];
+
+      const shouldIgnore = ignore401Patterns.some((re) => re.test(path));
+      if (status === 401 && !shouldIgnore) {
         try { logout(); } catch (error) { }
       }
       return Promise.reject(error);
@@ -55,6 +74,6 @@ export const useApi = () => {
 
     return instance;
   }, [token, logout]);
-  
+
   return api;
 };
