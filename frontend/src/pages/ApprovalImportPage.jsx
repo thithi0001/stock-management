@@ -5,6 +5,7 @@ import {
 } from '../services/approvalImportService';
 import { fetchImportReceiptById } from '../services/importService';
 import { useApi } from '../services/api';
+import { useRefresh } from '../context/RefreshContext'
 
 // --- Helpers ---
 const formatCurrency = (value) => {
@@ -54,6 +55,7 @@ function ApprovalImportPage() {
   const [detailLoading, setDetailLoading] = useState(false);
 
   const api = useApi();
+  const { refreshKey, triggerRefresh } = useRefresh();
 
   // Hàm gọi API để lấy danh sách phiếu
   const fetchReceipts = useCallback(async (status) => {
@@ -74,7 +76,7 @@ function ApprovalImportPage() {
   // Tự động gọi API khi 'currentTab' thay đổi
   useEffect(() => {
     fetchReceipts(currentTab);
-  }, [currentTab, fetchReceipts]);
+  }, [currentTab, fetchReceipts, refreshKey]);
 
   // Các hàm xử lý modal (Giữ nguyên)
   const handleViewDetails = async (receipt) => {
@@ -120,6 +122,7 @@ function ApprovalImportPage() {
       alert(result.message || 'Thao tác thành công!');
       handleCloseModals();
       fetchReceipts(currentTab);
+      triggerRefresh();
     } catch (err) {
       console.error(err);
       alert(`Lỗi: ${err.response?.data?.message || err.message}`);
