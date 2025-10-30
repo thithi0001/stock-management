@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { fetchImportReceipts, fetchImportReceiptById } from '../services/importService';
-// (ĐÃ SỬA) Đổi tên 'getRestockRequests' thành 'getAllRestockRequests'
 import { getAllRestockRequests } from '../services/restockServices';
 import { useApi } from '../services/api';
 import ImportModal from '../components/modals/ImportModal'; 
@@ -19,15 +18,22 @@ const RECEIPT_STATUS_CONFIG = {
   approved: { text: "Đã duyệt", className: "bg-green-100 text-green-800" },
   rejected: { text: "Đã từ chối", className: "bg-red-100 text-red-800" },
 };
-// (MỚI) Trạng thái yêu cầu
+// Trạng thái yêu cầu
 const REQUEST_STATUS_CONFIG = {
   pending: { text: "Chờ xử lý", className: "bg-blue-100 text-blue-800" },
   fulfilled: { text: "Đã xử lý", className: "bg-gray-100 text-gray-800" },
 };
-// (MỚI) Tabs nghiệp vụ
+// Tabs nghiệp vụ
 const VIEW_TABS = [
   { key: 'requests', label: 'Yêu cầu nhập hàng' },
   { key: 'receipts', label: 'Lịch sử phiếu nhập' },
+];
+// (MỚI) Filter cho tab lịch sử
+const RECEIPT_STATUS_FILTER_OPTIONS = [
+    { key: 'all', label: 'Tất cả trạng thái' },
+    { key: 'pending', label: 'Chờ duyệt' },
+    { key: 'approved', label: 'Đã duyệt' },
+    { key: 'rejected', label: 'Đã từ chối' },
 ];
 
 
@@ -36,8 +42,15 @@ export default function ImportPage() {
   const [restockRequests, setRestockRequests] = useState([]);
   const [importReceipts, setImportReceipts] = useState([]);
   
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // (MỚI) State cho Tìm kiếm và Lọc
+  const [requestSearch, setRequestSearch] = useState('');
+  const [receiptSearch, setReceiptSearch] = useState('');
+  const [receiptStatusFilter, setReceiptStatusFilter] = useState('all');
+  const debouncedRequestSearch = useDebounce(requestSearch, 300);
+  const debouncedReceiptSearch = useDebounce(receiptSearch, 300);
 
   // State cho modal
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -50,17 +63,16 @@ export default function ImportPage() {
 
   const api = useApi();
 
-  // (CẬP NHẬT) Load cả Yêu cầu và Phiếu nhập
+  // Load cả Yêu cầu và Phiếu nhập
   const loadData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      // 1. (ĐÃ SỬA) Đổi tên hàm
-      const reqRes = await getAllRestockRequests(api);
+      const [reqRes, receiptRes] = await Promise.all([
+        getAllRestockRequests(api),
+        fetchImportReceipts(api, 'all') // Lấy tất cả
+      ]);
       setRestockRequests(reqRes ?? []);
-      
-      // 2. Lấy Phiếu nhập
-      const receiptRes = await fetchImportReceipts(api, 'all'); // Lấy tất cả
       setImportReceipts(receiptRes ?? []);
     } catch (e) {
       console.error(e);
@@ -78,13 +90,13 @@ export default function ImportPage() {
     loadData(); // Tải lại cả 2 danh sách sau khi tạo
   };
 
-  // (MỚI) Mở modal tạo phiếu nhập
+  // Mở modal tạo phiếu nhập
   const handleOpenCreateModal = (request) => {
     setSelectedRequest(request);
     setIsModalOpen(true);
   };
   
-  // (CŨ) Mở modal xem chi tiết
+  // Mở modal xem chi tiết
   const handleViewDetails = async (id) => {
     setIsDetailOpen(true);
     setDetailLoading(true);
@@ -102,12 +114,11 @@ export default function ImportPage() {
   const closeDetailModal = () => {
     setIsDetailOpen(false);
     setDetailData(null);
-    setError(null);
+    setError(null); // Xóa lỗi cũ khi đóng modal
   }
 
   // --- Render Functions ---
 
-  // (MỚI) Render Tabs nghiệp vụ
   const renderViewTabs = () => (
     <div className="flex border-b border-gray-200 mb-6">
       {VIEW_TABS.map(tab => (
@@ -126,10 +137,61 @@ export default function ImportPage() {
     </div>
   );
 
-  // (MỚI) Bảng hiển thị các Yêu cầu
+  // (MỚI) Render thanh tìm kiếm/lọc
+  const renderFilterControls = () => {
+    if (view === 'requests') {
+      return (
+        <div className="mb-4">
+          <input 
+            type="text"
+            value={requestSearch}
+            onChange={(e) => setRequestSearch(e.target.value)}
+            placeholder="Tìm theo Tên SP hoặc ID Yêu cầu..."
+            className="w-full max-w-md px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+      );
+    }
+
+    if (view === 'receipts') {
+      return (
+        <div className="flex flex-wrap gap-4 mb-4">
+          <input 
+            type="text"
+            value={receiptSearch}
+            onChange={(e) => setReceiptSearch(e.target.value)}
+            placeholder="Tìm theo NCC, Người tạo, ID Phiếu..."
+            className="flex-grow px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            style={{ minWidth: '250px' }}
+          />
+          <select
+            value={receiptStatusFilter}
+            onChange={(e) => setReceiptStatusFilter(e.target.value)}
+            className="px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            {RECEIPT_STATUS_FILTER_OPTIONS.map(opt => (
+              <option key={opt.key} value={opt.key}>{opt.label}</option>
+            ))}
+          </select>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  // (CẬP NHẬT) Bảng hiển thị Yêu cầu (thêm logic filter)
   const renderRequestsTable = () => {
     // Lọc các yêu cầu đang chờ xử lý (pending)
-    const pendingRequests = restockRequests.filter(r => r.request_status === 'pending');
+    const pendingRequests = restockRequests
+      .filter(r => r.request_status === 'pending')
+      .filter(r => { // Thêm logic tìm kiếm
+        if (!debouncedRequestSearch) return true;
+        const query = debouncedRequestSearch.toLowerCase();
+        return (
+          (r.products?.product_name || '').toLowerCase().includes(query) ||
+          r.request_id.toString().includes(query)
+        );
+      });
     
     if (loading) return <div className="p-10 text-center text-lg text-gray-500">Đang tải...</div>;
     if (error) return <div className="p-4 text-center text-red-700 bg-red-100 border border-red-300 rounded-md">Lỗi: {error}</div>;
@@ -143,6 +205,7 @@ export default function ImportPage() {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID Yêu cầu</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sản phẩm</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SL Yêu cầu</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Người yêu cầu</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày Yêu cầu</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hành động</th>
@@ -156,6 +219,7 @@ export default function ImportPage() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{r.request_id}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{r.products?.product_name || 'N/A'}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-bold">{r.requested_quantity}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{r.user_accounts_restock_requests_requested_byTouser_accounts?.full_name || 'N/A'}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{formatDate(r.requested_at)}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`py-1 px-3 rounded-full text-xs font-semibold inline-block ${statusInfo.className}`}>
@@ -179,11 +243,26 @@ export default function ImportPage() {
     );
   }
 
-  // (CẬP NHẬT) Bảng hiển thị Lịch sử (đổi tên từ renderTable)
+  // (CẬP NHẬT) Bảng hiển thị Lịch sử (thêm logic filter + nút "Xem lý do")
   const renderReceiptsTable = () => {
+    const filteredReceipts = importReceipts
+      .filter(r => { // 1. Lọc theo trạng thái
+        if (receiptStatusFilter === 'all') return true;
+        return r.receipt_status === receiptStatusFilter;
+      })
+      .filter(r => { // 2. Lọc theo tìm kiếm
+        if (!debouncedReceiptSearch) return true;
+        const query = debouncedReceiptSearch.toLowerCase();
+        return (
+          (r.suppliers?.supplier_name || '').toLowerCase().includes(query) ||
+          (r.user_accounts?.full_name || '').toLowerCase().includes(query) ||
+          r.receipt_id.toString().includes(query)
+        );
+      });
+
     if (loading) return <div className="p-10 text-center text-lg text-gray-500">Đang tải...</div>;
     if (error) return <div className="p-4 text-center text-red-700 bg-red-100 border border-red-300 rounded-md">Lỗi: {error}</div>;
-    if (importReceipts.length === 0) return <div className="p-10 text-center text-lg text-gray-500">Không có phiếu nhập nào.</div>;
+    if (filteredReceipts.length === 0) return <div className="p-10 text-center text-lg text-gray-500">Không có phiếu nhập nào.</div>;
 
     return (
       <div className="shadow-md rounded-lg overflow-hidden">
@@ -200,7 +279,7 @@ export default function ImportPage() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {importReceipts.map(r => {
+            {filteredReceipts.map(r => {
               const statusInfo = RECEIPT_STATUS_CONFIG[r.receipt_status] || { text: r.receipt_status, className: "bg-gray-100 text-gray-800" };
               return (
                 <tr key={r.receipt_id} className="hover:bg-gray-50">
@@ -218,6 +297,15 @@ export default function ImportPage() {
                     <button className="text-blue-600 hover:text-blue-800 font-medium" onClick={() => handleViewDetails(r.receipt_id)}>
                       Xem
                     </button>
+                    {/* (MỚI) Thêm nút xem lý do */}
+                    {r.receipt_status === 'rejected' && (
+                      <button 
+                        className="text-red-600 hover:text-red-800 font-medium ml-3" 
+                        onClick={() => handleViewDetails(r.receipt_id)}
+                      >
+                        Xem lý do
+                      </button>
+                    )}
                   </td>
                 </tr>
               );
@@ -228,9 +316,13 @@ export default function ImportPage() {
     );
   };
   
-  // (GIỮ NGUYÊN) Modal xem chi tiết
+  // (CẬP NHẬT) Modal xem chi tiết (thêm hiển thị lý do)
   const renderDetailModal = () => {
     if (!isDetailOpen) return null;
+
+    // (MỚI) Lấy thông tin duyệt/từ chối
+    const approvalInfo = detailData?.approval_imports?.[0];
+
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 z-40 flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl">
@@ -245,6 +337,19 @@ export default function ImportPage() {
               <div className="p-4 text-center text-red-700 bg-red-100 border border-red-300 rounded-md">Lỗi: {error}</div>
             ) : detailData ? (
               <>
+                {/* (MỚI) Hiển thị lý do từ chối nếu có */}
+                {detailData.receipt_status === 'rejected' && approvalInfo && (
+                  <div className="p-3 bg-red-50 border-l-4 border-red-400 rounded-md mb-4">
+                    <p className="font-semibold text-red-800">Bị từ chối bởi: {approvalInfo.user_accounts?.full_name || 'N/A'}</p>
+                    <p className="text-red-700 mt-1"><strong>Lý do:</strong> {approvalInfo.reason || 'Không có lý do.'}</p>
+                  </div>
+                )}
+                {detailData.receipt_status === 'approved' && approvalInfo && (
+                  <div className="p-3 bg-green-50 border-l-4 border-green-400 rounded-md mb-4">
+                    <p className="font-semibold text-green-800">Đã duyệt bởi: {approvalInfo.user_accounts?.full_name || 'N/A'}</p>
+                  </div>
+                )}
+                
                 <div className="pb-4 mb-4 border-b border-gray-200">
                   <p><strong>ID Phiếu:</strong> #{detailData.receipt_id}</p>
                   <p><strong>Nhà cung cấp:</strong> {detailData.suppliers?.supplier_name}</p>
@@ -295,19 +400,36 @@ export default function ImportPage() {
         open={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
         onCreated={handleCreated} 
-        restockRequest={selectedRequest} // (MỚI) Truyền yêu cầu vào modal
+        restockRequest={selectedRequest}
       />
       
       {/* Modal xem chi tiết */}
       {renderDetailModal()}
 
-      {/* (MỚI) Hiển thị tabs nghiệp vụ */}
+      {/* Hiển thị tabs nghiệp vụ */}
       {renderViewTabs()}
       
-      {/* (MỚI) Hiển thị bảng dựa trên tab đang chọn */}
+      {/* (MỚI) Thêm thanh Filter */}
+      {renderFilterControls()}
+
+      {/* Hiển thị bảng dựa trên tab đang chọn */}
       <div className="bg-white p-6 rounded-lg shadow-sm">
         {view === 'requests' ? renderRequestsTable() : renderReceiptsTable()}
       </div>
     </div>
   );
+}
+
+// (MỚI) Thêm hook useDebounce (vì chúng ta đã xóa ở lần trước)
+function useDebounce(value, delay) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+  return debouncedValue;
 }
