@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { 
-  getImportApprovalsByStatus, 
-  approveImportReceipt 
+import {
+  getImportApprovalsByStatus,
+  approveImportReceipt
 } from '../services/approvalImportService';
-// (QUAN TRỌNG) Import hàm xem chi tiết từ service phiếu nhập
-import { fetchImportReceiptById } from '../services/importService'; 
+import { fetchImportReceiptById } from '../services/importService';
 import { useApi } from '../services/api';
 
 // --- Helpers ---
@@ -36,17 +35,21 @@ function ApprovalImportPage() {
   const [receipts, setReceipts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [currentTab, setCurrentTab] = useState('pending'); // Mặc định là 'chờ duyệt'
+  const [currentTab, setCurrentTab] = useState('pending');
+
+  // (MỚI) State cho Tìm kiếm
+  const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
   const [selectedReceipt, setSelectedReceipt] = useState(null);
   const [detailData, setDetailData] = useState(null);
-  
+
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);
-  
+
   const [actionType, setActionType] = useState('approved');
   const [actionReason, setActionReason] = useState('');
-  
+
   const [actionLoading, setActionLoading] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
 
@@ -57,6 +60,7 @@ function ApprovalImportPage() {
     setLoading(true);
     setError(null);
     try {
+      // API này chỉ lọc theo status, không có search param
       const data = await getImportApprovalsByStatus(api, status);
       setReceipts(data);
     } catch (err) {
@@ -72,17 +76,14 @@ function ApprovalImportPage() {
     fetchReceipts(currentTab);
   }, [currentTab, fetchReceipts]);
 
-  // Mở modal xem chi tiết
+  // Các hàm xử lý modal (Giữ nguyên)
   const handleViewDetails = async (receipt) => {
-    // Lấy ID chính xác, bất kể cấu trúc (pending hay đã duyệt)
     const receiptId = receipt.receipt_id || receipt.import_receipt_id;
-    
     setSelectedReceipt(receipt);
     setIsDetailModalOpen(true);
     setDetailLoading(true);
     setError(null);
     try {
-      // Gọi API chi tiết từ service 'importService'
       const data = await fetchImportReceiptById(api, receiptId);
       setDetailData(data);
     } catch (err) {
@@ -92,46 +93,33 @@ function ApprovalImportPage() {
       setDetailLoading(false);
     }
   };
-
-  // Mở modal duyệt/từ chối
   const handleOpenActionModal = (receipt, type) => {
     setSelectedReceipt(receipt);
     setActionType(type);
     setIsActionModalOpen(true);
-    setActionReason(''); // Reset lý do
+    setActionReason('');
   };
-
   const handleCloseModals = () => {
     setIsDetailModalOpen(false);
     setIsActionModalOpen(false);
     setDetailData(null);
+    setError(null); // Xóa lỗi cũ
   }
-
-  // Xác nhận hành động duyệt/từ chối
   const handleConfirmAction = async (e) => {
     e.preventDefault();
     if (actionType === 'rejected' && !actionReason.trim()) {
       alert('Vui lòng nhập lý do từ chối.');
       return;
     }
-    
     setActionLoading(true);
     setError(null);
-    
-    // Lấy ID của phiếu nhập
     const receiptId = selectedReceipt.receipt_id || selectedReceipt.import_receipt_id;
-    
     try {
-      const payload = {
-        new_status: actionType,
-        reason: actionReason
-      };
-      
+      const payload = { new_status: actionType, reason: actionReason };
       const result = await approveImportReceipt(api, receiptId, payload);
-      
       alert(result.message || 'Thao tác thành công!');
       handleCloseModals();
-      fetchReceipts(currentTab); // Tải lại danh sách
+      fetchReceipts(currentTab);
     } catch (err) {
       console.error(err);
       alert(`Lỗi: ${err.response?.data?.message || err.message}`);
@@ -148,8 +136,8 @@ function ApprovalImportPage() {
         <button
           key={tab.key}
           className={`py-3 px-5 text-gray-600 font-medium cursor-pointer border-b-2 transition duration-150 ease-in-out
-            ${currentTab === tab.key 
-              ? 'text-blue-600 border-blue-600' 
+            ${currentTab === tab.key
+              ? 'text-blue-600 border-blue-600'
               : 'border-transparent hover:bg-gray-100 hover:text-gray-800'
             }`}
           onClick={() => setCurrentTab(tab.key)}
@@ -160,10 +148,41 @@ function ApprovalImportPage() {
     </div>
   );
 
+  // (MỚI) Render thanh tìm kiếm
+  const renderSearchInput = () => (
+    <div className="mb-4">
+      <input
+        type="text"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        placeholder="Tìm theo ID Phiếu, NCC, Người tạo..."
+        className="w-full max-w-md px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+    </div>
+  );
+
+  // (CẬP NHẬT) Bảng hiển thị (thêm logic filter)
   const renderTable = () => {
+    // (MỚI) Lọc danh sách receipts dựa trên debouncedSearchQuery
+    const filteredReceipts = receipts.filter(r => {
+      if (!debouncedSearchQuery) return true;
+      const query = debouncedSearchQuery.toLowerCase();
+      // Xác định các trường cần tìm kiếm tùy thuộc vào cấu trúc trả về của API
+      const receipt_id = (r.receipt_id || r.import_receipt_id || '').toString();
+      const supplier = (r.suppliers?.supplier_name || r.supplier_name || '').toLowerCase();
+      const createdBy = (r.user_accounts?.full_name || r.requested_by_name || '').toLowerCase();
+
+      return (
+        receipt_id.includes(query) ||
+        supplier.includes(query) ||
+        createdBy.includes(query)
+      );
+    });
+
     if (loading) return <div className="p-10 text-center text-lg text-gray-500">Đang tải dữ liệu...</div>;
     if (error) return <div className="p-4 text-center text-red-700 bg-red-100 border border-red-300 rounded-md">Lỗi: {error}</div>;
-    if (receipts.length === 0) return <div className="p-10 text-center text-lg text-gray-500">Không có phiếu nào.</div>;
+    // (ĐÃ SỬA) Kiểm tra filteredReceipts
+    if (filteredReceipts.length === 0) return <div className="p-10 text-center text-lg text-gray-500">Không có phiếu nào khớp.</div>;
 
     const isPendingTab = currentTab === 'pending';
 
@@ -182,16 +201,17 @@ function ApprovalImportPage() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {receipts.map(r => {
+            {/* (ĐÃ SỬA) Map qua filteredReceipts */}
+            {filteredReceipts.map(r => {
               // Xử lý 2 cấu trúc JSON khác nhau từ API
               const receipt_id = r.receipt_id || r.import_receipt_id;
               const status = r.receipt_status || r.new_status;
               const supplier = r.suppliers?.supplier_name || r.supplier_name;
               const createdBy = r.user_accounts?.full_name || r.requested_by_name;
               const date = r.created_at || r.approved_at;
-              
+
               const statusInfo = STATUS_CONFIG[status] || { text: status, className: "" };
-              
+
               return (
                 <tr key={receipt_id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{receipt_id}</td>
@@ -222,14 +242,20 @@ function ApprovalImportPage() {
     );
   };
 
+  // Modal xem chi tiết (Giữ nguyên, đã có hiển thị lý do)
   const renderDetailModal = () => {
     if (!isDetailModalOpen) return null;
+
+    // Lấy thông tin duyệt/từ chối (nếu có)
+    // API chi tiết trả về approval_imports là mảng
+    const approvalInfo = detailData?.approval_imports?.[0];
 
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 z-40 flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl">
           <div className="flex justify-between items-center p-5 border-b border-gray-200">
-            <h2 className="text-xl font-semibold">Chi tiết Phiếu Nhập</h2>
+            {/* Sửa lại tiêu đề */}
+            <h2 className="text-xl font-semibold">Chi tiết Phiếu Nhập #{detailData?.receipt_id}</h2>
             <button onClick={handleCloseModals} className="text-gray-400 hover:text-gray-600 text-2xl font-light">&times;</button>
           </div>
           <div className="p-6 max-h-[70vh] overflow-y-auto">
@@ -239,6 +265,20 @@ function ApprovalImportPage() {
               <div className="p-4 text-center text-red-700 bg-red-100 border border-red-300 rounded-md">Lỗi: {error}</div>
             ) : detailData ? (
               <>
+                {/* Hiển thị lý do từ chối nếu có */}
+                {detailData.receipt_status === 'rejected' && approvalInfo && (
+                  <div className="p-3 bg-red-50 border-l-4 border-red-400 rounded-md mb-4">
+                    <p className="font-semibold text-red-800">Bị từ chối bởi: {approvalInfo.user_accounts?.full_name || 'N/A'}</p>
+                    <p className="text-red-700 mt-1"><strong>Lý do:</strong> {approvalInfo.reason || 'Không có lý do.'}</p>
+                  </div>
+                )}
+                {detailData.receipt_status === 'approved' && approvalInfo && (
+                  <div className="p-3 bg-green-50 border-l-4 border-green-400 rounded-md mb-4">
+                     <p className="font-semibold text-green-800">Đã duyệt bởi: {approvalInfo.user_accounts?.full_name || 'N/A'}</p>
+                  </div>
+                )}
+
+                {/* Thông tin phiếu */}
                 <div className="pb-4 mb-4 border-b border-gray-200 space-y-1">
                   <p><strong>ID Phiếu:</strong> #{detailData.receipt_id}</p>
                   <p><strong>Nhà cung cấp:</strong> {detailData.suppliers?.supplier_name}</p>
@@ -246,14 +286,9 @@ function ApprovalImportPage() {
                   <p><strong>Ngày tạo:</strong> {formatDate(detailData.created_at)}</p>
                   <p><strong>Tổng tiền:</strong> {formatCurrency(detailData.total_amount)}</p>
                   <p><strong>Trạng thái:</strong> {STATUS_CONFIG[detailData.receipt_status].text}</p>
-                  {detailData.approval_imports && detailData.approval_imports.length > 0 && (
-                    <>
-                      <p><strong>Người duyệt:</strong> {detailData.approval_imports[0].user_accounts?.full_name}</p>
-                      <p><strong>Ngày duyệt:</strong> {formatDate(detailData.approval_imports[0].approved_at)}</p>
-                      <p><strong>Ghi chú:</strong> {detailData.approval_imports[0].reason}</p>
-                    </>
-                  )}
+                  {/* Không cần hiển thị lại thông tin duyệt ở đây */}
                 </div>
+                {/* Bảng sản phẩm */}
                 <h3 className="text-lg font-semibold mb-3">Danh sách sản phẩm</h3>
                 <div className="shadow rounded-lg overflow-hidden border border-gray-200">
                   <table className="min-w-full divide-y divide-gray-200">
@@ -266,7 +301,7 @@ function ApprovalImportPage() {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {detailData.import_details?.map(item => (
+                      {detailData.import_details?.map(item => ( // Thêm ?.
                         <tr key={item.product_id}>
                           <td className="px-4 py-3 text-sm text-gray-700">{item.products?.product_name}</td>
                           <td className="px-4 py-3 text-sm text-gray-700">{item.quantity}</td>
@@ -285,11 +320,12 @@ function ApprovalImportPage() {
     );
   };
 
+  // Modal hành động (Duyệt/Từ chối) (Giữ nguyên)
   const renderActionModal = () => {
     if (!isActionModalOpen) return null;
-    
     const isReject = actionType === 'rejected';
-
+    // Lấy ID chính xác
+    const receiptId = selectedReceipt.receipt_id || selectedReceipt.import_receipt_id;
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
         <form onSubmit={handleConfirmAction} className="bg-white rounded-lg shadow-xl w-full max-w-lg">
@@ -298,7 +334,7 @@ function ApprovalImportPage() {
             <button type="button" onClick={handleCloseModals} className="text-gray-400 hover:text-gray-600 text-2xl font-light">&times;</button>
           </div>
           <div className="p-6">
-            <p className="text-base text-gray-700">Bạn có chắc muốn <strong>{isReject ? 'TỪ CHỐI' : 'DUYỆT'}</strong> phiếu nhập <strong>#{selectedReceipt.receipt_id || selectedReceipt.import_receipt_id}</strong> không?</p>
+            <p className="text-base text-gray-700">Bạn có chắc muốn <strong>{isReject ? 'TỪ CHỐI' : 'DUYỆT'}</strong> phiếu nhập <strong>#{receiptId}</strong> không?</p>
             {isReject && (
               <div className="mt-4">
                 <label htmlFor="reason" className="block text-sm font-medium text-gray-700 mb-2">Lý do từ chối (bắt buộc):</label>
@@ -330,6 +366,10 @@ function ApprovalImportPage() {
     <div className="p-6 min-h-screen">
       <h1 className="text-3xl font-bold mb-6 text-gray-800">Duyệt Phiếu Nhập Hàng</h1>
       {renderTabs()}
+
+      {/* (MỚI) Thêm thanh tìm kiếm */}
+      {renderSearchInput()}
+
       <div className="bg-white p-6 rounded-lg shadow-sm">
         {renderTable()}
       </div>
@@ -337,6 +377,20 @@ function ApprovalImportPage() {
       {renderActionModal()}
     </div>
   );
+}
+
+// (MỚI) Thêm hook useDebounce
+function useDebounce(value, delay) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+  return debouncedValue;
 }
 
 export default ApprovalImportPage;
