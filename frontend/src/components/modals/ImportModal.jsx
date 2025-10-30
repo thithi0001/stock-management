@@ -120,7 +120,7 @@ export default function ImportModal({ open, onClose, onCreated, restockRequest }
         note: `Linked to receipt #${newReceiptId}`
       });
       
-      toast.success(res?.message || "Tạo phiếu nhập thành công!");
+      toast.success(receiptRes.message || "Tạo phiếu nhập thành công!");
       onCreated && onCreated(); 
       onClose(); 
     } catch (e) {
