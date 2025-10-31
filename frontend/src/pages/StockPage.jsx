@@ -1,10 +1,14 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { ROLES } from "../constants/roles";
+import { getUsersByRole } from "../services/auth";
 import StockModal from "../components/modals/StockModal";
+import RestockModal from "../components/modals/RestockModal";
 import { getStocks, updateStock } from "../services/stockServices";
 import { useApi } from "../services/api";
 import { toast } from "react-toastify";
 import { useRefresh } from "../context/RefreshContext";
+import { createRestockRequest } from "../services/restockServices";
 
 const StockPage = () => {
   const { token } = useAuth();
@@ -14,8 +18,13 @@ const StockPage = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
+  const [requestModalOpen, setRequestModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [requesting, setRequesting] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [notifiedUsers, setNotifiedUsers] = useState([]); // <-- thêm
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const notifyRole = ROLES.IMPORTSTAFF;
 
   const fetchStocks = async () => {
     try {
@@ -29,6 +38,27 @@ const StockPage = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!token) return;
+    let mounted = true;
+    (async () => {
+      try {
+        setLoadingUsers(true);
+        const users = await getUsersByRole(api, notifyRole);
+        if (!mounted) return;
+        setNotifiedUsers(Array.isArray(users) ? users : []);
+      } catch (error) {
+        console.error("Fetch users by role error", error);
+        if (mounted) setNotifiedUsers([]);
+      } finally {
+        if (mounted) setLoadingUsers(false);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [token, api, notifyRole]);
 
   useEffect(() => {
     if (token) fetchStocks();
@@ -52,15 +82,23 @@ const StockPage = () => {
     setModalOpen(true);
   };
 
+  const openRequest = (p) => {
+    setRequesting(p);
+    setRequestModalOpen(true);
+  };
+
   const closeModal = () => {
     setModalOpen(false);
+    setRequestModalOpen(false);
     setEditing(null);
+    setRequesting(null);
   };
 
   const handleSave = async (data) => {
     try {
       if (editing) {
         await updateStock(api, editing.stock_id, data);
+        toast.success("Cập nhật thành công!");
       }
       await fetchStocks();
       triggerRefresh();
@@ -69,6 +107,22 @@ const StockPage = () => {
       console.error("Save stock error", err);
       toast.warn(
         err.response?.data?.message || err.message || "Lỗi khi cập nhật tồn kho"
+      );
+    }
+
+    try {
+      if (requesting) {
+        await createRestockRequest(api, data);
+        toast.success("Tạo yêu cầu thành công");
+      }
+      triggerRefresh();
+      closeModal();
+    } catch (error) {
+      console.error("Creat restock request error", error);
+      toast.error(
+        error.response?.data?.message ||
+          error.message ||
+          "Lỗi khi tạo yêu cầu nhập hàng"
       );
     }
   };
@@ -162,6 +216,12 @@ const StockPage = () => {
                     >
                       Sửa
                     </button>
+                    <button
+                      onClick={() => openRequest({ product_id: st.product_id })}
+                      className="px-2 py-1 mr-2 border rounded"
+                    >
+                      Yêu cầu nhập
+                    </button>
                   </td>
                 </tr>
               ))
@@ -175,6 +235,15 @@ const StockPage = () => {
         onClose={closeModal}
         onSave={handleSave}
         initialData={editing}
+      />
+
+      <RestockModal
+        open={requestModalOpen}
+        onClose={closeModal}
+        onSave={handleSave}
+        initialData={requesting}
+        notifiedUsers={notifiedUsers}
+        loadingUsers={loadingUsers}
       />
     </div>
   );
