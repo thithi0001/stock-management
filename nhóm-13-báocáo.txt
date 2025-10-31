@@ -3,24 +3,33 @@ KHUNG BÁO CÁO - HỆ THỐNG QUẢN LÝ KHO HÀNG
 
 I. GIỚI THIỆU ĐỀ TÀI
 1. Mục đích
-Ứng dụng giúp doanh nghiệp quản lý toàn bộ hoạt động nhập, xuất và kiểm kê hàng hóa một cách tự động, giảm sai sót và tiết kiệm thời gian.
+Trong bối cảnh hoạt động kinh doanh ngày càng phát triển, việc quản lý kho hàng theo phương pháp thủ công bằng giấy tờ hoặc công cụ rời rạc bộc lộ nhiều bất cập như sai sót, chậm trễ và thiếu khả năng truy vết, gây ảnh hưởng trực tiếp đến hiệu quả hoạt động của doanh nghiệp.
+Quản lý kho hàng được xây dựng nhằm mục đích tự động hóa và tối ưu các quá trình nghiệp vụ trong kho, giúp doanh nghiệp kiểm soát hàng hóa một cách chính xác, minh bạch và hiệu quả. Lợi ích chính của hệ thống là giảm thiếu sai sót do con người, tiết kiệm thời gian, cung cấp dữ liệu tồn kho theo thời gian thực và nâng cao khả năng quản lý tổng thể cho các quản lý cũng như nhân viên kho. 
 
 2. Mục tiêu
+Để giải quyết các vấn đề đã nêu, ứng dụng cần đạt được các mục tiêu cốt lõi thông qua những chức năng sau:
+- Quản lý nhập kho: Giúp thủ kho kiểm soát chặt chẽ và ghi nhận chính xác hàng hóa khi nhập vào kho, từ đó cập nhật số lượng tồn kho một cách tự động và nhanh chóng.
+- Quản lý xuất kho: Hỗ trợ việc xử lý đơn hàng và xuất kho hàng hóa một cách hiệu quả, đảm bảo đúng mặt hàng, đúng số lượng và có thể theo dõi được lịch sử xuất hàng.
+- Kiểm tra tồn kho: Cung cấp cho người quản lý một công cụ để tra cứu, theo dõi và báo cáo số lượng tồn kho của bất kỳ sản phẩm nào một cách tức thời, giúp đưa ra quyết định kinh doanh kịp thời và tránh tình trạng hết hàng.
 - Quản lý thông tin sản phẩm, nhà cung cấp, khách hàng.
 - Ghi nhận và phê duyệt phiếu nhập – xuất hàng.
-- Theo dõi số lượng tồn kho theo thời gian thực.
-- Cảnh báo hàng sắp hết, tự động tạo yêu cầu nhập hàng mới.
 - Tạo báo cáo tháng cho các hoạt động nhập – xuất – tồn.
 
 3. Phương pháp tiến hành
-a) Khảo sát mô hình quản lý kho thủ công hiện nay.
-b) Phân tích nghiệp vụ và các quy trình thực tế tại kho.
-c) Ứng dụng công nghệ NodeJS + ExpressJS + React + MySQL + Prisma để xây dựng PM.
-d) Thực hiện qua các bước: Phân tích → Thiết kế → Hiện thực → Kiểm thử → Đánh giá.
+Tìm hiểu hiện trạng: Khảo sát quy trình quản lý kho thực tế tại một doanh nghiệp để xác định các khó khăn và nhu cầu cần giải quyết, chẳng hạn như quy trình nhập/xuất thủ công, khó khăn trong việc kiểm kê, và thiếu báo cáo tức thời. Qua quá trình khảo sát thực tế tại một số doanh nghiệp sản xuất và phân phối hàng hóa, có thể nhận thấy rằng phần lớn hoạt động quản lý kho hiện nay vẫn được thực hiện thủ công hoặc bán thủ công, chủ yếu dựa trên phiếu giấy, sổ theo dõi hoặc file Excel. Quy trình nhập – xuất – tồn kho được thực hiện bởi nhiều bộ phận, nhưng thiếu sự đồng bộ và cập nhật theo thời gian thực. Qua đó ta thấy được lợi ích của phần mềm quản lý kho hàng mang lại cho người dùng cảm giác an toàn và theo dõi được số liệu luôn khớp với thực tế, tránh thất thoát, tối ưu hóa không gian lưu trữ của kho.
+Tìm hiểu nghiệp vụ: Nghiên cứu các quy tắc, quy định và luồng công việc liên quan đến việc nhập hàng từ nhà cung cấp, xuất hàng cho khách hàng và các quy trình kiểm kê định kỳ mà phần mềm cần tuân thủ. Chúng ta cần xác định mục tiêu kinh doanh, phạm vi dự án, thu nhập và phân tích quy trình hiện tại. Có thể đến những doanh nghiệp hoặc công ty để có thể phỏng vấn và quan sát. Phân tích dữ liệu và tài liệu qua các danh mục hàng hóa, bố trí kho, các báo cáo nhập/xuất hàng. Tìm hiểu thêm về các tiêu chí về hiệu suất và kỹ thuật của phần mềm như hiệu năng, tích hợp, bảo mật cao về dữ liệu.
+Nghiên cứu kiến thức nền tảng: Tìm hiểu các mô hình quản lý kho phổ biến, các giải pháp công nghệ như mã vạch/QR code để tăng tốc độ nhận dạng sản phẩm, và các kiến thức về thiết kế cơ sở dữ liệu cho hệ thống quản lý. Mở rộng những kiến thức về quy trình vận hành kho tiêu chuẩn, hiểu rõ chuỗi các hoạt động chính trong kho: nhận hàng, lưu trữ, lấy hàng, đóng gói, xuất hàng, kiểm kê. Tích hợp các công nghệ và thiết bị phần mềm sẽ dùng. Sử dụng thiết bị để định danh sản phẩm/vị trí như máy quét mã vạch, máy quét không dây và cách sử dụng chúng.
+Phân tích, thiết kế, hiện thực và đánh giá: Dựa trên các thông tin đã thu thập, tiến hành phân tích yêu cầu hệ thống, thiết kế kiến trúc phần mềm, cơ sở dữ liệu, xây dựng (hiện thực) ứng dụng và cuối cùng là kiểm thử, đánh giá để đảm bảo phần mềm đáp ứng đúng mục tiêu đề ra. Về việc phân tích nhằm hiểu sâu sắc về những yêu cầu và xác định chính xác những gì hệ thống cần làm. Thiết kế thì bao gồm kiến trúc hệ thống và giao diện người dùng. Thiết kế kiến trúc hệ thì đảm bảo phải đạt những tiêu chí về mô hình hóa dữ liệu, cụ thể là cơ sở dữ liệu để lưu trữ thông tin tồn kho, vị trí, lô hàng. Lựa chọn những nền tảng, ngôn ngữ lập trình phù hợp nhằm đạt được mục đích sử dụng, phát triển lâu dài. Thiết kế giao diện người dùng về Web/Desktop/Mobile đảm bảo tính đơn giản, dễ thao tác và hiệu quả trong việc quản lý kho. Sau khi làm xong thì bắt đầu bước vào giai đoạn kiểm thử các chức năng của hệ thống. Nếu hệ thống hoạt động bình thường thì chính thức đưa hệ thống vào vận hành thực tế. Qua việc sử dụng, chúng ta có thể theo dõi hiệu suất, thu nhập phản hồi và cải tiến liên tục nhằm đạt được tối ưu, phù hợp với sự phát triển của nghiệp vụ kho hàng.
 
 ----------------------------------------------------
 
 II. CƠ SỞ KHOA HỌC CỦA ĐỀ TÀI
+1. Quy trình nghiệp vụ và quy định/quy tắc quản lý
+#need 
+
+2. Công nghệ sử dụng
+
+
 - Quy trình nghiệp vụ: hoạt động nhập hàng, xuất hàng, kiểm kê, báo cáo.
 - Công nghệ sử dụng:
   + Backend: NodeJS + ExpressJS (RESTful API, kiến trúc 3-layer).
@@ -35,83 +44,293 @@ II. CƠ SỞ KHOA HỌC CỦA ĐỀ TÀI
 ----------------------------------------------------
 
 III. PHÂN TÍCH HỆ THỐNG
-
 1. Hiện trạng phát sinh nhu cầu
-Mô hình vận hành cũ (thủ công): Các phiếu nhập – xuất được ghi trên giấy, cập nhật sổ sách bằng tay, khó đối chiếu số lượng thực tế.
+1.1. Mục tiêu tổ chức
+
+1.2. Các đối tượng trong mô hình vận hành hiện tại
+
+1.3. Quy trình vận hành hiện tại
+Lược đồ UML tuần tự hoặc cộng tác
+
+a. Nhập hàng
+@startuml
+@enduml
+
+Mô tả bằng văn bản
+
+b. Xuất hàng
+@startuml
+@enduml
+
+Mô tả bằng văn bản
+
+c. Kiểm tra tồn kho
+@startuml
+@enduml
+
+Mô tả bằng văn bản
+
+1.4. Khó khăn của mô hình hiện tại
+Các phiếu nhập – xuất được ghi trên giấy, cập nhật sổ sách bằng tay, khó đối chiếu số lượng thực tế.
 - Khó phát hiện sai lệch tồn kho.
 - Chậm trễ trong lập báo cáo, thống kê.
 - Không dự đoán được sản phẩm bán chạy.
 
-Lược đồ cộng tác (PlantUML):
-@startuml
-actor "Thủ kho" as Keeper
-actor "Nhân viên mua hàng" as Buyer
-actor "Nhân viên bán hàng" as Seller
-Keeper -> Buyer: Gửi danh sách hàng thiếu
-Buyer -> Supplier: Liên hệ nhập hàng
-Seller -> Keeper: Yêu cầu xuất hàng
-Keeper -> Record: Cập nhật sổ giấy
-@enduml
+Lược đồ uml tuần tự hoặc cộng tác
 
 Ưu điểm: dễ triển khai, không cần công nghệ.
 Khuyết điểm: sai sót cao, không có thống kê tự động.
 
-----------------------------------------------------
+2. Mô hình vận hành mới (có phần mềm)
+2.1. Nhận định từ hiện trạng
+#need 
 
-2. Mô hình vận hành mới (có PM)
+2.2. Các đối tượng trong mô hình vận hành mới
+
+2.3. Quy trình vận hành mới
+Lược đồ tuần tự
+
+2.4. Lợi ích của mô hình mới
+
 Lợi ích:
 - Tự động cập nhật tồn kho sau mỗi phiếu nhập/xuất.
 - Cảnh báo hàng sắp hết để tạo restock request.
 - Báo cáo tháng tự động tổng hợp.
 
 Use Cases chính:
-1. Nhập sản phẩm vào kho
-2. Xuất sản phẩm khỏi kho
-3. Kiểm tra tồn kho
+- Nhập hàng vào kho
+- Xuất hàng khỏi kho
+- Kiểm tra tồn kho
 
-Lược đồ usecase (PlantUML):
-@startuml
-actor "Thủ kho"
-actor "Nhân viên mua hàng"
-actor "Nhân viên bán hàng"
-actor "Quản lý"
+3. Các tình huống mà phần mềm tham gia giải quyết
+Lược đồ usecase 
+Mục đích
+Actor chính
+Actor liên quan
+Tiền điều kiện
+Hậu điều kiện (thành công)
+Hậu điều kiện (thất bại)
+Luồng chính
+Luồng ngoại lệ
 
-usecase "Nhập sản phẩm" as UC1
-usecase "Xuất sản phẩm" as UC2
-usecase "Kiểm tra tồn kho" as UC3
-usecase "Tạo báo cáo tháng" as UC4
+4. Các tương tác của phần mềm
+4.1. Lược đồ usecase tổng thể
+4.2. Lược đồ tuần tự 
+4.3. Lược đồ hoạt động
 
-"Thủ kho" --> UC1
-"Nhân viên mua hàng" --> UC1
-"Thủ kho" --> UC2
-"Nhân viên bán hàng" --> UC2
-"Quản lý" --> UC3
-"Quản lý" --> UC4
-@enduml
+5. Yêu cầu cho từng đối tượng thành phần của phần mềm
+5.1. Các đối tượng thành phần của phần mềm cho từng usecase
+5.2. Các actor trợ giúp cần thiết cho phần mềm để có giải pháp khả thi
+5.3. Cách phối hợp xử lý tình huống giữa các đối tượng trong và ngoài hệ thống
+5.4. Yêu cầu chi tiết (thuộc tính, phương thức) cho từng đối tượng thành phần
+
+6. Yêu cầu chất lượng cho phần mềm (Non-Functional Requirements)
 
 ----------------------------------------------------
 
-IV. PHÂN TÍCH YÊU CẦU
+IV. THIẾT KẾ HỆ THỐNG
+1. Thiết kế kiến trúc phần mềm
+1.1. (Lớp biên) Form:
+a. Thêm/Sửa sản phẩm
+User: Thủ kho
+Control chính của form:
+- textbox Tên sản phẩm, Đơn vị, Giá nhập, Giá xuất, Tối thiểu
+- droplist Trạng thái
+- button Hủy
+- button Lưu
+Inputs: thông tin sản phẩm
+Outputs: thông báo "Thêm mới sản phẩm thành công" hoặc "Cập nhật sản phẩm thành công"
+Xử lý: 
+- POST /api/products/ - createProduct(data)
+- PUT /api/products/:product_id - updateProduct(product_id, data)
 
-1. Xác định các đối tượng thành phần (CRC)
-| Lớp/Đối tượng | Trách nhiệm | Cộng tác với |
-|----------------|--------------|---------------|
-| Product | Lưu thông tin sản phẩm | Stock, ImportDetail, ExportDetail |
-| Stock | Quản lý tồn kho | Product, ImportReceipt, ExportReceipt |
-| ImportReceipt | Ghi nhận nhập hàng | Supplier, Stock |
-| ExportReceipt | Ghi nhận xuất hàng | Customer, Stock |
-| UserAccount | Quản lý người dùng | Role |
-| MonthlyReport | Tổng hợp báo cáo | ImportReceipt, ExportReceipt |
+b. Cập nhật tồn kho
+User: Thủ kho
+Control chính của form:
+- label Tên sản phẩm, Đơn vị, Tối thiểu, Trạng thái sản phẩm, Số lượng tồn kho
+- droplist trạng thái kho
+Inputs: trạng thái hàng trong kho
+Outputs: thông báo "Cập nhật thành công!"
+Xử lý: 
+- POST /api/stocks/:stock_id - updateStock(stock_id, data)
 
-Lược đồ lớp (textUML):
+c. Tạo yêu cầu nhập hàng
+User: Thủ kho
+Control chính của form:
+- droplist Tên hàng, Người nhận yêu cầu
+- textbox Số lượng yêu cầu, Ghi chú
+- button Hủy
+- button Lưu
+Inputs: tên và số lượng hàng muốn nhập, người nhận yêu cầu nhập hàng và ghi chú
+Outputs: thông báo "Tạo yêu cầu thành công!"
+Xử lý: 
+- POST /api/restock - createRestockRequest(data)
+
+d. Thêm/Cập nhật Nhà cung cấp
+User: Quản lý kho, Thủ kho, Nhân viên nhập hàng
+Control chính của form:
+- textbox Tên nhà cung cấp, Địa chỉ, Số điện thoại, Email
+- button Hủy
+- button Lưu
+Inputs: thông tin nhà cung cấp
+Outputs: thông báo "Thêm nhà cung cấp thành công!" hoặc "Cập nhật thành công!"
+Xử lý: 
+- POST /api/suppliers - createSupplier(data)
+- PUT /api/suppliers/:id - updateSupplier(id, data)
+
+e. Thêm/Cập nhật Khách hàng
+User: Quản lý kho, Thủ kho, Nhân viên xuất hàng
+Control chính của form:
+- textbox Tên khách hàng, Địa chỉ, Số điện thoại, Email
+- button Hủy
+- button Lưu
+Inputs: thông tin nhà cung cấp
+Outputs: thông báo "Thêm khách hàng thành công!" hoặc "Cập nhật thành công!"
+Xử lý: 
+- POST /api/customers - createCustomer(data)
+- PUT /api/customers/:id - updateCustomer(id, data)
+
+f. Tạo phiếu nhập
+User: Nhân viên nhập hàng
+Control chính của form:
+- label Mã yêu cầu nhập hàng
+- droplist Nhà cung cấp
+- table: 
+    + column: Tên sản phẩm, Số lượng, Đơn giá (nhập), Thành tiền
+    + row: thông tin tương ứng của sản phẩm
+- button Thêm sản phẩm (thêm dòng)
+- button Xóa sản phẩm (xóa dòng)
+- label Tổng giá trị đơn
+- button Hủy
+- button Lưu phiếu nhập
+Inputs: danh sách và thông tin các sản phẩm
+Outputs: thông báo "Tạo phiếu nhập thành công!"
+Xử lý: POST /api/import - createImportReceipt(data)
+
+g. Tạo phiếu xuất
+User: Nhân viên xuất hàng
+- droplist Khách hàng
+- table: 
+    + column: Tên sản phẩm, Số lượng, Đơn giá (xuất), Thành tiền
+    + row: thông tin tương ứng của sản phẩm
+- button Thêm sản phẩm (thêm dòng)
+- button Xóa sản phẩm (xóa dòng)
+- label Tổng giá trị đơn
+- button Hủy
+- button Lưu phiếu xuất
+Inputs: danh sách và thông tin các sản phẩm
+Outputs: thông báo "Tạo phiếu xuất thành công!"
+Xử lý: POST /api/export - createExportReceipt(data)
+
+1.2. (Lớp xử lý) API
+- POST /api/products/ - createProduct(data)
+Nhiệm vụ trong CSDL:...
+Inputs: tham số đầu vào
+Outputs: bộ dữ liệu (data set) trả về
+Quyền sử dụng
+
+- PUT /api/products/:product_id - updateProduct(product_id, data)
+Nhiệm vụ trong CSDL:...
+Inputs: tham số đầu vào
+Outputs: bộ dữ liệu (data set) trả về
+Quyền sử dụng
+
+- POST /api/stocks/:stock_id - updateStock(stock_id, data)
+Nhiệm vụ trong CSDL:...
+Inputs: tham số đầu vào
+Outputs: bộ dữ liệu (data set) trả về
+Quyền sử dụng
+
+- POST /api/restock - createRestockRequest(data)
+Nhiệm vụ trong CSDL:...
+Inputs: tham số đầu vào
+Outputs: bộ dữ liệu (data set) trả về
+Quyền sử dụng
+
+- POST /api/suppliers - createSupplier(data)
+Nhiệm vụ trong CSDL:...
+Inputs: tham số đầu vào
+Outputs: bộ dữ liệu (data set) trả về
+Quyền sử dụng
+
+- PUT /api/suppliers/:id - updateSupplier(id, data)
+Nhiệm vụ trong CSDL:...
+Inputs: tham số đầu vào
+Outputs: bộ dữ liệu (data set) trả về
+Quyền sử dụng
+
+- POST /api/customers - createCustomer(data)
+Nhiệm vụ trong CSDL:...
+Inputs: tham số đầu vào
+Outputs: bộ dữ liệu (data set) trả về
+Quyền sử dụng
+
+- PUT /api/customers/:id - updateCustomer(id, data)
+Nhiệm vụ trong CSDL:...
+Inputs: tham số đầu vào
+Outputs: bộ dữ liệu (data set) trả về
+Quyền sử dụng
+
+- POST /api/import - createImportReceipt(data)
+Nhiệm vụ trong CSDL:...
+Inputs: tham số đầu vào
+Outputs: bộ dữ liệu (data set) trả về
+Quyền sử dụng
+
+- POST /api/export - createExportReceipt(data)
+Nhiệm vụ trong CSDL:...
+Inputs: tham số đầu vào
+Outputs: bộ dữ liệu (data set) trả về
+Quyền sử dụng
+
+
+
+2. Thiết kế cơ sở dữ liệu
+2.1. Lược đồ Class
+@startuml
+' ===============================
+'  LƯỢC ĐỒ CLASS CHO DATABASE QUẢN LÝ KHO
+' ===============================
+
 class Product {
   +product_id: int
-  +product_name: string
-  +unit: string
-  +import_price: decimal
-  +export_price: decimal
+  +product_name: varchar(100)
+  +unit: varchar(50)
+  +import_price: decimal(12,2)
+  +export_price: decimal(12,2)
   +minimum: int
-  +product_status: enum
+  +product_status: enum('available','unavailable')
+}
+
+class Supplier {
+  +supplier_id: int
+  +supplier_name: varchar(100)
+  +address: varchar(200)
+  +phone: varchar(15)
+  +email: varchar(100)
+}
+
+class Customer {
+  +customer_id: int
+  +customer_name: varchar(100)
+  +address: varchar(200)
+  +phone: varchar(15)
+  +email: varchar(100)
+}
+
+class Role {
+  +role_id: int
+  +role_name: varchar(50)
+}
+
+class UserAccount {
+  +user_id: int
+  +username: varchar(50)
+  +user_password: varchar(255)
+  +full_name: varchar(100)
+  +phone: varchar(15)
+  +email: varchar(100)
+  +account_status: enum('active','inactive')
 }
 
 class Stock {
@@ -119,34 +338,149 @@ class Stock {
   +quantity: int
   +last_updated_at: datetime
   +warning: bit
-  +updateQuantity()
+  +stock_status: enum('normal','damaged')
 }
 
 class ImportReceipt {
   +receipt_id: int
-  +total_amount: decimal
-  +createReceipt()
-  +approveReceipt()
+  +created_at: datetime
+  +receipt_status: enum('pending','approved','rejected')
+  +total_amount: decimal(20,2)
 }
-Product "1" -- "many" Stock
-ImportReceipt "1" -- "many" Product
 
-----------------------------------------------------
+class ImportDetail {
+  +receipt_id: int
+  +product_id: int
+  +quantity: int
+  +unit_price: decimal(12,2)
+  +total_amount: decimal(20,2)
+}
 
-V. THIẾT KẾ HỆ THỐNG
+class ExportReceipt {
+  +receipt_id: int
+  +created_at: datetime
+  +receipt_status: enum('pending','approved','rejected')
+  +total_amount: decimal(20,2)
+}
 
-1. Phân tầng kiến trúc
-- Giao diện (ReactJS): Form nhập, xuất, kiểm tra tồn kho.
-- Xử lý (ExpressJS): API /api/imports, /api/exports, /api/stocks.
-- Dữ liệu (MySQL + Prisma): ánh xạ bảng products, stocks, import_receipts, ...
+class ExportDetail {
+  +receipt_id: int
+  +product_id: int
+  +quantity: int
+  +unit_price: decimal(12,2)
+  +total_amount: decimal(20,2)
+}
 
-2. Liên kết mô-đun
-| Layer | Thành phần chính | Mô tả |
-|--------|------------------|-------|
-| Presentation | React Components | Form nhập/xuất hàng |
-| Application | API Controller | Gọi service xử lý yêu cầu |
-| Service | Business Logic | Tính toán, xác thực dữ liệu |
-| Data | Prisma Model | CRUD dữ liệu thực tế |
+class ApprovalImport {
+  +approval_id: int
+  +approved_at: datetime
+  +new_status: enum('approved','rejected')
+  +reason: varchar(500)
+}
+
+class ApprovalExport {
+  +approval_id: int
+  +approved_at: datetime
+  +new_status: enum('approved','rejected')
+  +reason: varchar(500)
+}
+
+class ErrorReport {
+  +error_id: int
+  +error_type: enum('system','inventory','import','export','user')
+  +message: varchar(500)
+  +created_at: datetime
+  +is_solved: bit
+}
+
+class MonthlyReport {
+  +report_id: int
+  +report_type: enum('import','export','inventory')
+  +from_date: datetime
+  +to_date: datetime
+  +file_url: varchar(255)
+  +created_at: datetime
+}
+
+class RestockRequest {
+  +request_id: int
+  +requested_at: datetime
+  +requested_quantity: int
+  +request_status: enum('pending','fulfilled')
+  +note: varchar(255)
+}
+
+class RestockImportLink {
+  +link_id: int
+  +created_at: datetime
+  +link_status: enum('active','replaced','rejected','fulfilled')
+  +note: varchar(255)
+}
+
+' ========== QUAN HỆ ==========
+
+Role "1" -- "many" UserAccount : has >
+UserAccount "1" -- "many" ImportReceipt : creates >
+UserAccount "1" -- "many" ExportReceipt : creates >
+UserAccount "1" -- "many" ApprovalImport : approves >
+UserAccount "1" -- "many" ApprovalExport : approves >
+UserAccount "1" -- "many" RestockRequest : requests >
+UserAccount "1" -- "many" ErrorReport : creates >
+
+Supplier "1" -- "many" ImportReceipt : provides >
+Customer "1" -- "many" ExportReceipt : receives >
+Product "1" -- "many" Stock : tracked >
+Product "1" -- "many" ImportDetail : included >
+Product "1" -- "many" ExportDetail : included >
+ImportReceipt "1" -- "many" ImportDetail : contains >
+ExportReceipt "1" -- "many" ExportDetail : contains >
+ImportReceipt "1" -- "many" ApprovalImport : approvedBy >
+ExportReceipt "1" -- "many" ApprovalExport : approvedBy >
+RestockRequest "1" -- "many" RestockImportLink : linked >
+ImportReceipt "1" -- "many" RestockImportLink : fulfilledBy >
+
+@enduml
+
+
+2.2. Stored Procedure
+a. sp_increase_stock
+Nhiệm vụ: cập nhật tăng số lượng hàng hóa trong kho theo phiếu nhập hàng
+Inputs: import_receipt_id (mã phiếu nhập hàng)
+Quyền sử dụng (role): Thủ kho (storekeeper)
+
+b. sp_decrese_stock
+Nhiệm vụ: cập nhật giảm số lượng hàng hóa trong kho theo phiếu xuất hàng
+Inputs: export_receipt_id (mã phiếu xuất hàng)
+Quyền sử dụng (role): Thủ kho (storekeeper)
+
+2.3. Trigger
+a. tr_stock_last_updated
+Nhiệm vụ: cập nhật thời gian khi hàng trong kho được cập nhật
+Event: update on stocks
+Action: set stocks.last_updated_at = current_timestamp()
+
+b. tr_stock_warning_check;
+Nhiệm vụ: cảnh báo khi hàng tồn kho đạt ngưỡng tối thiểu, chuyển lại bình thường khi hàng trên ngưỡng tối thiểu
+Event: update on stocks.quantity
+Action: 
+- set stocks.warning = 1 nếu <= ngưỡng
+- set stocks.warning = 0 nếu > ngưỡng
+
+c. tr_handle_import_receipt_update_status;
+Nhiệm vụ: quản lý trạng thái của liên kết giữa yêu cầu nhập hàng và phiếu nhập hàng
+Event: update on import_receipt.receipt_status
+Action: 
+- set restock_import_links.link_status = fulfilled nếu receipt_status chuyển từ pending -> approved
+- set restock_import_links.link_status = rejected nếu receipt_status chuyển từ pending -> rejected
+- set restock_import_links.link_status = active nếu receipt_status chuyển từ rejected -> pending
+- set restock_import_links.link_status = replaced nếu yêu cầu giải quyết bởi 1 phiếu nhập mới
+
+d. tr_handle_link_update_status;
+Nhiệm vụ: quản lý trạng thái của yêu cầu nhập hàng
+Event: update on restock_import_links.link_status
+Action:
+- set restock_request.request_status = fulfilled nếu link_status = fulfilled
+
 
 ----------------------------------------------------
 
@@ -189,14 +523,4 @@ frontend/
 
 ----------------------------------------------------
 
-VIII. ĐÁNH GIÁ
-- Ưu điểm: Tự động, dễ mở rộng, dữ liệu chính xác, dễ giám sát.
-- Hạn chế: Chưa tích hợp AI dự đoán hàng bán chạy, cần bảo mật nâng cao.
-- Hướng phát triển: Tích hợp phân tích dữ liệu và biểu đồ thống kê theo tháng.
 
-----------------------------------------------------
-
-IX. TÀI LIỆU THAM KHẢO
-- Viet bao cao xay dung ung dung-2025-v2.pdf
-- quan_ly_kho_db.sql
-- Prisma Docs, ExpressJS Guide, ReactJS Official Docs.

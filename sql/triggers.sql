@@ -2,14 +2,14 @@ DROP TRIGGER IF EXISTS tr_stock_last_updated;
 DROP TRIGGER IF EXISTS tr_stock_warning_check;
 DROP TRIGGER IF EXISTS tr_handle_import_receipt_update_status;
 DROP TRIGGER IF EXISTS tr_handle_link_update_status;
-DROP TRIGGER IF EXISTS tr_handle_insert_link;
+-- DROP TRIGGER IF EXISTS tr_handle_insert_link;
 
 DELIMITER //
 CREATE TRIGGER tr_stock_last_updated
 BEFORE UPDATE ON stocks
 FOR EACH ROW
 BEGIN
-	SET new.last_updated_at = current_timestamp();
+	SET NEW.last_updated_at = current_timestamp();
 END//
 DELIMITER ;
 
