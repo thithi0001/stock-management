@@ -110,7 +110,7 @@ export default function RestockModal({
         <h3 className="text-lg font-semibold mb-4">Tạo yêu cầu nhập hàng</h3>
         <form onSubmit={handleSubmit} className="space-y-3">
           <div>
-            <label className="block text-sm">Tên hàng (hiện tại là ID)</label>
+            <label className="block text-sm">Tên hàng</label>
             <select
               name="product_id"
               value={form.product_id}

@@ -413,7 +413,7 @@ function ApprovalPage() {
               onClick={handleCloseModals}
               disabled={actionLoading}
             >
-              Hủy bỏ
+              Hủy
             </button>
             <button
               type="submit"

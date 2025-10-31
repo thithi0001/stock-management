@@ -354,7 +354,7 @@ function ApprovalImportPage() {
             )}
           </div>
           <div className="flex justify-end gap-3 p-5 border-t border-gray-200">
-            <button type="button" className={btnSecondary} onClick={handleCloseModals} disabled={actionLoading}>Hủy bỏ</button>
+            <button type="button" className={btnSecondary} onClick={handleCloseModals} disabled={actionLoading}>Hủy</button>
             <button type="submit" className={isReject ? btnReject : btnApprove} disabled={actionLoading}>
               {actionLoading ? 'Đang xử lý...' : `Xác nhận ${isReject ? 'Từ chối' : 'Duyệt'}`}
             </button>

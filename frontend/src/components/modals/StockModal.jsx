@@ -88,15 +88,15 @@ export default function StockModal({
           <hr className="my-2" />
 
           <div>
-            <label className="block text-sm">Số lượng</label>
+            <label className="block text-sm">Số lượng tồn kho</label>
             <input
               name="quantity"
               value={form.quantity}
-              onChange={handleChange}
-              type="number"
-              step="1"
+              // onChange={handleChange}
+              // type="number"
+              // step="1"
               className="w-full border rounded p-2"
-              required
+              // required
             />
           </div>
 

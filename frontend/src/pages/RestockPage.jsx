@@ -4,13 +4,10 @@ import { useAuth } from "../context/AuthContext";
 import { ROLES } from "../constants/roles";
 import { useApi } from "../services/api";
 import RestockModal from "../components/modals/RestockModal";
-import { getUsersByRole } from "../services/auth"
+import { getUsersByRole } from "../services/auth";
 import {
-  getAllLinks,
-  getLinkById,
   createRestockRequest,
   getAllRestockRequests,
-  getRestockRequestById,
 } from "../services/restockServices";
 import { useRefresh } from "../context/RefreshContext";
 
@@ -95,7 +92,7 @@ const RestockPage = () => {
       triggerRefresh();
       closeModal();
     } catch (error) {
-      console.error("Save restock request error", error);
+      console.error("Create restock request error", error);
       toast.error(
         error.response?.data?.message ||
           error.message ||
