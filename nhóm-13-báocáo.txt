@@ -1,4 +1,4 @@
-KHUNG BÁO CÁO - HỆ THỐNG QUẢN LÝ KHO HÀNG
+BÁO CÁO - HỆ THỐNG QUẢN LÝ KHO HÀNG
 ====================================================
 
 I. GIỚI THIỆU ĐỀ TÀI
@@ -24,12 +24,26 @@ Phân tích, thiết kế, hiện thực và đánh giá: Dựa trên các thôn
 ----------------------------------------------------
 
 II. CƠ SỞ KHOA HỌC CỦA ĐỀ TÀI
-1. Quy trình nghiệp vụ và quy định/quy tắc quản lý
-#need 
+1. Quy trình nghiệp vụ 
+Qui trình hoạt động cốt lõi của một hệ thống quản lý kho bao gồm các bước chính sau:
+1.1 Nghiệp vụ nhập kho
+Thủ kho phát hiện thiếu hàng trong quá trình kiểm kê và yêu cầu nhân viên nhập kho lập phiếu yêu cầu nhập hàng, trong đó ghi rõ thông tin sản phẩm và số lượng. Thủ kho sau đó kiểm tra, duyệt yêu cầu, tiếp nhận hàng hóa thực tế, đối chiếu với phiếu yêu cầu, và sau khi xác nhận hàng hóa khớp, tiến hành ký nhận hoàn tất nhập kho.
+1.2 Nghiệp vụ xuất kho
+Nhân viên bán hàng lập yêu cầu xuất kho khi có đơn đặt hàng; thủ kho tiếp nhận yêu cầu, thực hiện lấy hàng và đóng gói theo đúng nội dung yêu cầu; sau khi hàng được xuất đi, thủ kho thông báo cho nhân viên bán hàng để tiến hành lập hóa đơn.
+1.3 Nghiệp vụ kiểm kê
+Thủ kho định kỳ kiểm kê số lượng hàng hóa thực tế và lập phiếu kiểm kê; nếu phát hiện sai lệch, gửi yêu cầu lên quản lý kèm lý do cụ thể (như hỏng, thất lạc); sau khi quản lý phê duyệt và cập nhật hồ sơ hoặc hệ thống, nếu thiếu hàng thì tiến hành yêu cầu nhân viên mua hàng nhập bổ sung.
 
-2. Công nghệ sử dụng
+2. Quy định/quy tắc quản lý
+Quy tắc về Chứng từ (Tính hợp lệ):
+- Mọi hoạt động nhập/xuất kho đều BẮT BUỘC phải có chứng từ gốc (Phiếu nhập, Phiếu xuất) hợp lệ, có đầy đủ chữ ký của các bên liên quan.
+- Không được nhập/xuất hàng nếu không có phiếu.
+Quy tắc về Sổ sách (Tính chính xác):
+- Giấy tờ/ hệ thống phải được cập nhật ngay sau khi phát sinh giao dịch.
+- Không được thực hiện sai, sửa chữa trên giấy tờ/ hệ thống mà không có quyền hạn.
+Quản lý lưu trữ:
+Toàn bộ chứng từ (phiếu nhập, xuất) phải được sắp xếp theo thứ tự thời gian, đánh số và lưu trữ cẩn thận (ít nhất 3-5 năm tùy quy định) để phục vụ việc truy vết, kiểm toán.
 
-
+3. Công nghệ sử dụng
 - Quy trình nghiệp vụ: hoạt động nhập hàng, xuất hàng, kiểm kê, báo cáo.
 - Công nghệ sử dụng:
   + Backend: NodeJS + ExpressJS (RESTful API, kiến trúc 3-layer).
@@ -163,9 +177,6 @@ end
 
 == Kết thúc ==
 @enduml
-
-
-Mô tả bằng văn bản
 
 1.4. Khó khăn của mô hình hiện tại
 - Các phiếu nhập – xuất được ghi trên giấy, cập nhật sổ sách bằng tay, khó đối chiếu số lượng thực tế.
