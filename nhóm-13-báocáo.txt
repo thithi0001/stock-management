@@ -97,17 +97,14 @@ end
 Mô tả bằng văn bản
 
 1.4. Khó khăn của mô hình hiện tại
-Các phiếu nhập – xuất được ghi trên giấy, cập nhật sổ sách bằng tay, khó đối chiếu số lượng thực tế.
+- Các phiếu nhập – xuất được ghi trên giấy, cập nhật sổ sách bằng tay, khó đối chiếu số lượng thực tế.
 - Khó phát hiện sai lệch tồn kho.
 - Chậm trễ trong lập báo cáo, thống kê.
 - Không dự đoán được sản phẩm bán chạy.
-
-Ưu điểm: dễ triển khai, không cần công nghệ.
-Khuyết điểm: sai sót cao, không có thống kê tự động.
+- Không có thống kê tự động.
 
 2. Mô hình vận hành mới (có phần mềm)
 2.1. Nhận định từ hiện trạng
-#need 
 
 2.2. Các đối tượng trong mô hình vận hành mới
 Quản lý kho
