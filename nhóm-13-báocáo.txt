@@ -76,8 +76,6 @@ Các phiếu nhập – xuất được ghi trên giấy, cập nhật sổ sác
 - Chậm trễ trong lập báo cáo, thống kê.
 - Không dự đoán được sản phẩm bán chạy.
 
-Lược đồ uml tuần tự hoặc cộng tác
-
 Ưu điểm: dễ triển khai, không cần công nghệ.
 Khuyết điểm: sai sót cao, không có thống kê tự động.
 
@@ -89,6 +87,23 @@ Khuyết điểm: sai sót cao, không có thống kê tự động.
 
 2.3. Quy trình vận hành mới
 Lược đồ tuần tự
+a. Nhập hàng
+@startuml
+@enduml
+
+Mô tả bằng văn bản
+
+b. Xuất hàng
+@startuml
+@enduml
+
+Mô tả bằng văn bản
+
+c. Kiểm tra tồn kho
+@startuml
+@enduml
+
+Mô tả bằng văn bản
 
 2.4. Lợi ích của mô hình mới
 
@@ -116,7 +131,6 @@ Luồng ngoại lệ
 4. Các tương tác của phần mềm
 4.1. Lược đồ usecase tổng thể
 4.2. Lược đồ tuần tự 
-4.3. Lược đồ hoạt động
 
 5. Yêu cầu cho từng đối tượng thành phần của phần mềm
 5.1. Các đối tượng thành phần của phần mềm cho từng usecase
@@ -481,29 +495,9 @@ Event: update on restock_import_links.link_status
 Action:
 - set restock_request.request_status = fulfilled nếu link_status = fulfilled
 
-
 ----------------------------------------------------
 
-VI. QUY TRÌNH NGHIỆP VỤ MẪU
-
-Use case: Nhập sản phẩm
-@startuml
-actor "Thủ kho"
-participant "WebApp"
-participant "API Server"
-participant "Database"
-
-"Thủ kho" -> "WebApp": Gửi phiếu nhập
-"WebApp" -> "API Server": POST /api/imports
-"API Server" -> "Database": INSERT import_receipts + import_details
-"Database" --> "API Server": OK
-"API Server" --> "WebApp": Cập nhật thành công
-"WebApp" --> "Thủ kho": Hiển thị thông báo
-@enduml
-
-----------------------------------------------------
-
-VII. HIỆN THỰC
+V. HIỆN THỰC
 - Công nghệ: NodeJS 22, React 18, Prisma ORM, MySQL 8.
 - Cấu trúc thư mục:
 backend/
