@@ -199,6 +199,33 @@ Nhân viên bán hàng
 2.2. Quy trình vận hành mới (Lược đồ tuần tự)
 a. Nhập hàng
 @startuml
+actor "Thủ kho" as TK
+participant "Hệ thống" as SYS
+actor "Nhân viên mua hàng" as NM
+
+TK -> SYS: Kiểm tra tồn kho
+alt Thiếu hàng
+  TK -> NM: Gửi Yêu cầu nhập hàng
+  NM -> SYS: Tạo Phiếu mua hàng chi tiết
+  NM -> TK: Gửi Phiếu mua hàng
+  TK -> TK: Kiểm tra Phiếu
+  alt Phiếu sai
+    TK -> NM: Từ chối + ghi lý do
+  else Phiếu đúng
+    TK -> NM: Duyệt Phiếu
+    NM -> TK: Thông báo hàng đã về
+    TK -> TK: Kiểm tra hàng thực tế đối chiếu Phiếu
+    alt Hàng khớp
+      TK -> SYS: Hoàn thành đơn nhập
+      SYS -> SYS: Cập nhật tồn kho
+    else Không khớp
+      TK -> SYS: Hủy đơn nhập + lý do
+      SYS -> SYS: Không cập nhật tồn kho
+    end
+  end
+else (Tồn kho đủ)
+  TK -> TK: Kết thúc
+end
 @enduml
 
 Mô tả bằng văn bản
