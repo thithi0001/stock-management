@@ -573,6 +573,21 @@ Nhiệm vụ: cập nhật giảm số lượng hàng hóa trong kho theo phiế
 Inputs: export_receipt_id (mã phiếu xuất hàng)
 Quyền sử dụng (role): Thủ kho (storekeeper)
 
+c. sp_report_import_by_month;
+Nhiệm vụ: báo cáo số lượng nhập trong tháng và năm
+Inputs: tháng, năm
+Quyền sử dụng (role): Thủ kho (storekeeper) và quản lý (manager)
+
+d. sp_report_export_by_month;
+Nhiệm vụ: báo cáo số lượng xuất trong tháng và năm
+Inputs: tháng, năm
+Quyền sử dụng (role): Thủ kho (storekeeper) và quản lý (manager)
+
+e. sp_report_inventory_snapshot;
+Nhiệm vụ: báo cáo số lượng tồn kho trong tháng và năm
+Inputs: tháng, năm
+Quyền sử dụng (role): Thủ kho (storekeeper) và quản lý (manager)
+
 2.3. Trigger
 a. tr_stock_last_updated
 Nhiệm vụ: cập nhật thời gian khi hàng trong kho được cập nhật
