@@ -1,7 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "../pages/LoginPage";
 import ProtectedRoute from "./ProtectedRoute";
-import Home from "../pages/Home";
 import { ROLES } from "../constants/roles";
 import MainLayout from "../components/layout/MainLayout";
 import ProductPage from "../pages/ProductPage";
@@ -15,6 +14,7 @@ import SupplierPage from "../pages/SupplierPage";
 import ImportPage from "../pages/ImportPage";
 import ApprovalImportPage from "../pages/ApprovalImportPage";
 import ProfilePage from "../pages/ProfilePage";
+import StatisticsPage from "../pages/StatisticsPage";
 
 function AppRoutes() {
   return (
@@ -116,7 +116,7 @@ function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={[ROLES.MANAGER, ROLES.STOREKEEPER]}>
             <MainLayout>
-              <Home />
+              <StatisticsPage />
             </MainLayout>
           </ProtectedRoute>
         }

@@ -60,9 +60,80 @@ Mô tả bằng văn bản
 
 b. Xuất hàng
 @startuml
+title Quy trình Xuất hàng (Thủ công - Chưa có phần mềm)
+
+actor "Khách hàng" as Customer <<Customer>>
+actor "NV Bán hàng" as Seller <<ExportStaff>>
+actor "Thủ kho" as Keeper <<Storekeeper>>
+participant "Sổ giấy / Excel" as Record
+participant "Tồn kho" as Stock
+
+skinparam actor {
+    BackgroundColor<<Customer>> LightGreen
+    BackgroundColor<<ExportStaff>> LightPink
+    BackgroundColor<<Storekeeper>> LightBlue
+}
+skinparam participant {
+    BackgroundColor LightGrey
+}
+
+Customer -> Seller: 1. Đặt hàng (bằng miệng hoặc giấy)
+Seller -> Keeper: 2. Gửi yêu cầu xuất hàng
+Keeper -> Record: 3. Tra cứu tồn kho (thủ công)
+Record -> Stock: 4. Kiểm tra số lượng tồn thực tế
+
+alt Hàng còn đủ
+    Stock -> Keeper: 5a. Xác nhận còn đủ hàng
+    Keeper -> Seller: 6a. Thông báo đủ hàng
+    Keeper -> Stock: 7a. Cập nhật trừ tồn kho
+    Keeper -> Record: 8a. Ghi chép xuất hàng
+    Keeper -> Seller: 9a. Bàn giao hàng cho NV Bán hàng
+    Seller -> Customer: 10a. Giao hàng cho khách hàng
+else Hàng không đủ
+    Stock -> Keeper: 5b. Báo thiếu hàng
+    Keeper -> Seller: 6b. Thông báo không đủ hàng
+    Seller -> Customer: 7b. Thông báo hết hàng
+end
+
 @enduml
 
-Mô tả bằng văn bản
+Bước 1 – Khách hàng đặt hàng
+
+Khách hàng liên hệ trực tiếp hoặc thông qua điện thoại để đặt hàng với Nhân viên bán hàng. Việc đặt hàng có thể bằng miệng hoặc trên giấy, không có hệ thống phần mềm hỗ trợ.
+
+Bước 2 – Nhân viên bán hàng gửi yêu cầu xuất kho
+
+Sau khi tiếp nhận yêu cầu, Nhân viên bán hàng gửi yêu cầu xuất hàng cho Thủ kho, thông thường qua trao đổi trực tiếp hoặc ghi chú giấy.
+
+Bước 3 – Thủ kho tra cứu thông tin tồn kho
+
+Thủ kho tra cứu thông tin hàng tồn trong sổ ghi chép hoặc file Excel để kiểm tra sơ bộ tình trạng hàng hóa.
+
+Bước 4 – Kiểm tra tồn kho thực tế
+
+Thủ kho đối chiếu với tồn kho thực tế (Stock) bằng cách kiểm tra số lượng hàng còn trong kho.
+
+Trường hợp 1: Hàng còn đủ
+
+1. Tồn kho (Stock) xác nhận hàng hóa còn đủ số lượng theo yêu cầu.
+
+2. Thủ kho thông báo lại cho Nhân viên bán hàng rằng có thể xuất hàng.
+
+3. Thủ kho cập nhật tồn kho bằng cách trừ số lượng đã xuất khỏi tổng tồn thực tế.
+
+4. Thủ kho ghi chép thông tin xuất hàng vào sổ giấy hoặc file Excel, bao gồm: ngày xuất, số lượng, người nhận, và lý do xuất.
+
+5. Thủ kho bàn giao hàng cho Nhân viên bán hàng để chuẩn bị giao cho khách.
+
+6. Nhân viên bán hàng giao hàng cho Khách hàng và xác nhận hoàn tất đơn hàng.
+
+Trường hợp 2: Hàng không đủ
+
+1. Tồn kho (Stock) phản hồi rằng hàng không đủ hoặc đã hết.
+
+2. Thủ kho thông báo cho Nhân viên bán hàng về tình trạng thiếu hàng.
+
+3. Nhân viên bán hàng thông báo lại cho Khách hàng, có thể hẹn ngày giao hàng khác hoặc từ chối đơn hàng.
 
 c. Kiểm tra tồn kho
 @startuml
@@ -121,9 +192,57 @@ Mô tả bằng văn bản
 
 b. Xuất hàng
 @startuml
+title Quy trình Xuất hàng (Có phần mềm hỗ trợ)
+
+actor "Khách hàng" as Customer
+actor "Nhân viên bán hàng" as Seller
+actor "Thủ kho" as Keeper
+participant "Hệ thống" as System
+participant "Kho" as Stock
+
+== Khách hàng yêu cầu mua hàng ==
+Customer -> Seller: 1. Đặt yêu cầu mua hàng
+
+== Nhân viên gửi yêu cầu xuất ==
+Seller -> System: 2. Gửi yêu cầu xuất hàng
+System -> Keeper: 3. Thông báo yêu cầu xuất hàng mới
+
+== Thủ kho kiểm tra tồn kho ==
+Keeper -> System: 4. Kiểm tra tồn kho trên hệ thống
+System -> Stock: 5. Lấy thông tin tồn kho
+Stock --> System: 6. Trả về kết quả kiểm tra tồn kho
+
+alt Hàng còn đủ
+    Keeper -> System: 7a. Chấp nhận yêu cầu xuất hàng
+    System -> Stock: 8a. Tự động cập nhật số lượng tồn
+    System -> Seller: 9a. Gửi thông báo “Yêu cầu đã được chấp nhận”
+    Seller -> Stock: 10a. Lấy hàng trong kho
+    Seller -> Customer: 11a. Giao hàng cho khách hàng
+else Hàng không đủ
+    Keeper -> System: 7b. Từ chối yêu cầu
+    System -> Seller: 8b. Thông báo “Hàng không đủ”
+    Seller -> Customer: 11b. Thông báo “Hàng không đủ”
+end
+
 @enduml
 
-Mô tả bằng văn bản
+Khách hàng đến mua hàng trực tiếp.
+
+Nhân viên bán hàng (Seller) gửi yêu cầu xuất hàng qua hệ thống (System).
+
+Thủ kho (Keeper) nhận thông báo yêu cầu từ hệ thống.
+
+Thủ kho kiểm tra tồn kho trên hệ thống, hệ thống lấy dữ liệu từ Stock.
+
+Nếu hàng còn đủ, thủ kho chấp nhận yêu cầu:
+
+Hệ thống tự động cập nhật số lượng tồn kho.
+
+Gửi thông báo chấp nhận cho nhân viên bán hàng.
+
+Nhân viên bán hàng đến kho nhận hàng và giao cho khách hàng.
+
+Nếu hàng không đủ, hệ thống thông báo từ chối đến nhân viên bán hàng và nhân viên báo cho khách hàng.
 
 c. Kiểm tra tồn kho
 @startuml
