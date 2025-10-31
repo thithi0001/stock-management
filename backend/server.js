@@ -14,6 +14,7 @@ import exportRoutes from './routes/exportRoutes.js';
 import approvalExportRoutes from './routes/approvalExportRoutes.js';
 import customerRoutes from './routes/customerRoutes.js';
 import supplierRoutes from './routes/supplierRoutes.js';
+import reportsRoutes from './routes/reportsRoutes.js';
 
 const app = express();
 
@@ -49,6 +50,9 @@ app.use('/api/suppliers', supplierRoutes);
 app.use('/api/export', exportRoutes);
 // Duyet xuat hang
 app.use('/api/approval-export', approvalExportRoutes);
+
+// Thong ke
+app.use('/api/reports', reportsRoutes);
 
 
 app.get('/api/database', async (req, res) => {

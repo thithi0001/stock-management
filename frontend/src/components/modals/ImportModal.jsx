@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { createImportReceipt } from '../../services/importService';
-// (ĐÃ SỬA) Đổi 'createRestockLink' thành 'createLink'
-import { createLink } from '../../services/restockServices'; 
+// (ĐÃ SỬA) Sửa tên hàm import cho đúng
+import { createLink } from '../../services/restockServices';
 import { getProducts } from '../../services/productServices';
-import { toast } from 'react-toastify';
 import { getSuppliers } from '../../services/supplierService';
 import { useApi } from '../../services/api';
 
@@ -28,6 +27,9 @@ export default function ImportModal({ open, onClose, onCreated, restockRequest }
   const [error, setError] = useState('');
 
   const api = useApi();
+  
+  // (MỚI) Xác định xem đây là phiếu tự do (ad-hoc) hay theo yêu cầu
+  const isAdHoc = !restockRequest;
 
   // Load NCC và Sản phẩm
   useEffect(() => {
@@ -42,7 +44,7 @@ export default function ImportModal({ open, onClose, onCreated, restockRequest }
           getProducts(api)
         ]);
         if (cancelled) return;
-        setSuppliers(normalizeResponse(supplierRes)); 
+        setSuppliers(normalizeResponse(supplierRes));
         setProducts(normalizeResponse(productRes));
       } catch (err) {
         if (cancelled) return;
@@ -56,36 +58,59 @@ export default function ImportModal({ open, onClose, onCreated, restockRequest }
     return () => { cancelled = true; };
   }, [open, api]);
 
-  // (CẬP NHẬT) Tự động điền sản phẩm từ Yêu cầu (Restock Request)
+  // (CẬP NHẬT) Tự động điền sản phẩm HOẶC tạo dòng trống
   useEffect(() => {
-    if (restockRequest && products.length > 0) {
-      const product = products.find(p => p.product_id === restockRequest.product_id);
-      setLines([
-        {
-          product_id: restockRequest.product_id,
-          product_name: product?.product_name || 'N/A', // Hiển thị tên
-          quantity: restockRequest.requested_quantity || 1,
-          unit_price: product?.import_price || 0, // Tự điền giá nhập
-        }
-      ]);
-    } else {
-      setLines([]); // Reset nếu không có request
+    if (open) { // Chỉ chạy khi modal mở
+      if (isAdHoc) {
+        // Case 2: Tạo tự do, bắt đầu với 1 dòng rỗng
+        setLines([{ product_id: '', quantity: 1, unit_price: 0 }]);
+      } else if (restockRequest && products.length > 0) {
+        // Case 1: Tạo từ yêu cầu
+        const product = products.find(p => p.product_id === restockRequest.product_id);
+        setLines([
+          {
+            product_id: restockRequest.product_id,
+            product_name: product?.product_name || 'N/A',
+            quantity: restockRequest.requested_quantity || 1,
+            unit_price: product?.import_price || 0,
+          }
+        ]);
+      } else if (!restockRequest) {
+          setLines([]);
+      }
     }
-  }, [restockRequest, products]);
+  }, [open, isAdHoc, restockRequest, products]);
 
-  // (CẬP NHẬT) Chỉ cho phép sửa số lượng và giá
+  // (THÊM LẠI) Các hàm quản lý dòng (chỉ dùng cho ad-hoc)
+  const addLine = () => setLines([...lines, { product_id: '', quantity: 1, unit_price: 0 }]);
+  const removeLine = (i) => setLines(lines.filter((_, idx) => idx !== i));
+
+  // (CẬP NHẬT) Hàm updateLine
   const updateLine = (i, patch) => {
-    setLines(lines.map((l, idx) => (idx === i ? { ...l, ...patch } : l)));
+    setLines(lines.map((l, idx) => {
+      if (idx !== i) return l;
+      
+      const updatedLine = { ...l, ...patch };
+      
+      // Nếu là tạo tự do và chọn sản phẩm -> tự điền giá
+      if (isAdHoc && patch.product_id) {
+        const selected = products.find(p => Number(p.product_id) === Number(patch.product_id));
+        if (selected) {
+          updatedLine.unit_price = selected.import_price ?? 0;
+        }
+      }
+      return updatedLine;
+    }));
   };
 
   const computeLineTotal = (l) => (Number(l.quantity || 0) * Number(l.unit_price || 0));
   const computeTotal = () => lines.reduce((sum, l) => sum + computeLineTotal(l), 0);
 
-  // (CẬP NHẬT) handleSubmit giờ sẽ tạo phiếu VÀ tạo link
+  // (CẬP NHẬT) handleSubmit (thêm điều kiện if (restockRequest))
   const handleSubmit = async () => {
     setError('');
     if (!supplierId) return setError('⚠️ Vui lòng chọn nhà cung cấp');
-    if (!lines.every(l => l.product_id && l.quantity > 0)) return setError('⚠️ Sản phẩm không hợp lệ');
+    if (!lines.every(l => l.product_id && l.quantity > 0)) return setError('⚠️ Điền đầy đủ thông tin sản phẩm');
     if (!window.confirm('Xác nhận tạo phiếu nhập này?')) return;
 
     setLoading(true);
@@ -113,20 +138,21 @@ export default function ImportModal({ open, onClose, onCreated, restockRequest }
         throw new Error("Không nhận được ID phiếu nhập sau khi tạo.");
       }
 
-      // 2. (ĐÃ SỬA) Đổi tên hàm
-      await createLink(api, {
-        restock_request_id: restockRequest.request_id,
-        import_receipt_id: newReceiptId,
-        note: `Linked to receipt #${newReceiptId}`
-      });
+      // 2. (CẬP NHẬT) Chỉ tạo Link nếu đây là phiếu nhập từ Yêu cầu
+      if (restockRequest) {
+        await createLink(api, {
+          restock_request_id: restockRequest.request_id,
+          import_receipt_id: newReceiptId,
+          note: `Linked to receipt #${newReceiptId}`
+        });
+      }
       
-      toast.success(receiptRes.message || "Tạo phiếu nhập thành công!");
+      alert(receiptRes.message || "Tạo phiếu nhập thành công!");
       onCreated && onCreated(); 
       onClose(); 
     } catch (e) {
       console.error(e);
       setError(e?.response?.data?.message || e?.message || 'Lỗi khi tạo phiếu nhập');
-      toast.error(error);
     } finally {
       setLoading(false);
     }
@@ -138,13 +164,18 @@ export default function ImportModal({ open, onClose, onCreated, restockRequest }
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="bg-white rounded-lg p-6 w-full max-w-4xl shadow-lg max-h-[90vh] flex flex-col">
         <h3 className="text-xl font-semibold mb-4">🧾 Tạo phiếu nhập kho</h3>
-        <p className="text-sm text-gray-600 mb-2">
-          Từ Yêu cầu: <span className="font-medium">#{restockRequest.request_id}</span>
-        </p>
+        
+        {/* (CẬP NHẬT) Chỉ hiển thị khi có yêu cầu */}
+        {!isAdHoc && (
+          <p className="text-sm text-gray-600 mb-2">
+            Từ Yêu cầu: <span className="font-medium">#{restockRequest.request_id}</span>
+          </p>
+        )}
 
         {error && <div className="text-red-600 mb-2 p-3 bg-red-50 border border-red-200 rounded">{error}</div>}
 
         <div className="flex-grow overflow-y-auto pr-2">
+          {/* Select Nhà cung cấp (Giữ nguyên) */}
           <div className="mb-4">
             <label className="block text-sm font-medium mb-1">Nhà cung cấp</label>
             <select
@@ -161,8 +192,9 @@ export default function ImportModal({ open, onClose, onCreated, restockRequest }
             </select>
           </div>
 
+          {/* Bảng sản phẩm (CẬP NHẬT) */}
           <div>
-            <label className="block text-sm font-medium mb-2">Danh sách sản phẩm (Từ yêu cầu)</label>
+            <label className="block text-sm font-medium mb-2">Danh sách sản phẩm</label>
             <div className="overflow-x-auto border rounded-lg">
               <table className="w-full text-sm">
                 <thead className="bg-gray-100">
@@ -171,19 +203,37 @@ export default function ImportModal({ open, onClose, onCreated, restockRequest }
                     <th className="p-2 text-center w-1/6">Số lượng</th>
                     <th className="p-2 text-center w-1/6">Đơn giá (nhập)</th>
                     <th className="p-2 text-center w-1/6">Thành tiền</th>
+                    {/* (MỚI) Thêm cột Xóa nếu là ad-hoc */}
+                    {isAdHoc && <th className="p-2 w-10"></th>} 
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {lines.map((l, i) => (
                     <tr key={i}>
                       <td className="p-2">
-                        {/* (CẬP NHẬT) Không cho sửa sản phẩm, chỉ hiển thị */}
-                        <input 
-                          type="text" 
-                          value={l.product_name}
-                          readOnly
-                          className="border-0 bg-gray-100 p-1 rounded w-full"
-                        />
+                        {isAdHoc ? (
+                          // (MỚI) Case 2: Select sản phẩm
+                          <select
+                            className="border p-1 rounded w-full"
+                            value={l.product_id}
+                            onChange={(e) => updateLine(i, { product_id: e.target.value })}
+                          >
+                            <option value="">-- Chọn sản phẩm --</option>
+                            {products.map(p => (
+                              <option key={p.product_id} value={p.product_id}>
+                                {`${p.product_name} — [${p.unit ?? 'đv'}]`}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          // Case 1: Input bị khóa (Từ yêu cầu)
+                          <input 
+                            type="text" 
+                            value={l.product_name}
+                            readOnly
+                            className="border-0 bg-gray-100 p-1 rounded w-full"
+                          />
+                        )}
                       </td>
                       <td className="p-2 text-center">
                         <input
@@ -205,15 +255,38 @@ export default function ImportModal({ open, onClose, onCreated, restockRequest }
                         />
                       </td>
                       <td className="p-2 text-right font-medium">{formatCurrency(computeLineTotal(l))}</td>
+                      
+                      {/* (MỚI) Nút xóa */}
+                      {isAdHoc && (
+                        <td className="p-2 text-center">
+                          <button
+                            onClick={() => removeLine(i)}
+                            disabled={lines.length === 1}
+                            className="text-red-500 font-bold hover:text-red-700 disabled:opacity-30"
+                          >
+                            ✕
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            {/* Không cần nút "+ Thêm sản phẩm" vì phiếu nhập chỉ dựa trên 1 yêu cầu */}
+            
+            {/* (MỚI) Nút thêm dòng (chỉ cho ad-hoc) */}
+            {isAdHoc && (
+              <button
+                onClick={addLine}
+                className="mt-2 text-blue-600 text-sm font-medium hover:text-blue-800"
+              >
+                + Thêm sản phẩm
+              </button>
+            )}
           </div>
         </div>
 
+        {/* Footer (Giữ nguyên) */}
         <div className="mt-6 pt-4 border-t flex justify-between items-center">
           <div className="text-lg font-semibold">
             Tổng cộng: <span className="text-blue-700">{formatCurrency(computeTotal())}</span>
