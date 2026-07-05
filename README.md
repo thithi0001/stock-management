@@ -1,6 +1,6 @@
 # Stock Management — Quick start
 
-Các bước ngắn gọn (bỏ qua cấu hình .env — bạn đã có sẵn):
+Các bước ngắn gọn (bỏ qua cấu hình .env):
 
 1. Database (MySQL)
 - Chạy file SQL khởi tạo:
